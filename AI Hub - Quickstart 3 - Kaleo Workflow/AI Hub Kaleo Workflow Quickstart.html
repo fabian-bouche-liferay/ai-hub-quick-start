@@ -1,0 +1,1043 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quick Start: Fixing Blog Grammar with an AI Hub Agent Triggered from a DXP Workflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  /* Design tokens pulled from learn.liferay.com's own stylesheet
+     (https://liferaylearnglobalcss-exte5a2learn-extprd.lfr.cloud/global.css)
+     — the CSS custom-property fallback values there, e.g.
+     var(--color-brand-primary, #0b5fff), are learn.liferay.com's real
+     palette, not an approximation of it. */
+  --lf-brand: #0b5fff;
+  --lf-brand-hover: #0053f0;
+  --lf-brand-active: #004ad7;
+
+  --lf-neutral-0: #ffffff;
+  --lf-neutral-1: #f7f7f8;
+  --lf-neutral-2: #e2e2e4;
+  --lf-neutral-4: #b1b2b9;
+  --lf-neutral-6: #82828c;
+  --lf-neutral-8: #54555f;
+  --lf-neutral-9: #33343d;
+  --lf-neutral-10: #282934;
+
+  --lf-active-bg: #e6edfb;
+  --lf-hover-bg: #edf3fe;
+
+  --lf-warning-bg: #f7eae0;   --lf-warning-text: #944000;
+  --lf-success-bg: #e9f5e8;   --lf-success-text: #3b892f;
+  --lf-info-bg: #e6ebf5;      --lf-info-text: #25488a;
+
+  --lf-font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --lf-font-mono: 'Source Code Pro', Consolas, Menlo, "Liberation Mono", monospace;
+  --lf-radius: 0.5rem;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--lf-font-sans);
+  color: var(--lf-neutral-8);
+  background: var(--lf-neutral-0);
+  line-height: 1.6;
+}
+
+/* Top bar */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 60px;
+  background: var(--lf-neutral-0); color: var(--lf-neutral-10);
+  display: flex; align-items: center; gap: .75rem; padding: 0 1rem;
+  z-index: 50; border-bottom: 1px solid var(--lf-neutral-2);
+}
+.topbar .logo { font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: .45rem; letter-spacing: .01em; color: var(--lf-neutral-10); }
+.topbar .logo .dot { width: .55rem; height: .55rem; border-radius: 50%; background: var(--lf-brand); }
+.topbar .doc-title {
+  color: var(--lf-neutral-6); font-size: .85rem; border-left: 1px solid var(--lf-neutral-2);
+  padding-left: .75rem; margin-left: .1rem; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; max-width: 55vw;
+}
+.topbar .spacer { flex: 1; }
+.menu-toggle {
+  display: none; background: transparent; border: 1px solid var(--lf-neutral-2);
+  color: var(--lf-neutral-10); border-radius: 6px; padding: .3rem .55rem; font-size: 1rem; cursor: pointer;
+}
+
+/* Layout */
+.layout { display: flex; padding-top: 60px; min-height: 100vh; }
+.sidebar {
+  position: fixed; top: 60px; bottom: 0; left: 0; width: 300px;
+  overflow-y: auto; background: var(--lf-neutral-1); border-right: 1px solid var(--lf-neutral-2);
+  padding: 1rem .85rem 2.5rem; z-index: 40;
+}
+.toc-filter {
+  width: 100%; padding: .5rem .65rem; border: 1px solid var(--lf-neutral-2);
+  border-radius: 6px; font-size: .85rem; margin-bottom: .85rem; background: var(--lf-neutral-0);
+  font-family: inherit; color: var(--lf-neutral-10);
+}
+.toc ul { list-style: none; margin: 0; padding-left: 1rem; }
+.toc > div > ul, .toc > ul { padding-left: 0; }
+.toc a {
+  display: block; padding: .32rem .55rem .32rem .65rem; color: var(--lf-neutral-8);
+  text-decoration: none; font-size: .86rem; line-height: 1.35; border-left: 2px solid transparent;
+}
+.toc li.toc-level-2 > a { font-weight: 700; color: var(--lf-neutral-10); font-size: .9rem; margin-top: .4rem; }
+.toc li.toc-level-3 > a { font-weight: 500; }
+.toc li.toc-level-4 > a { font-size: .8rem; color: var(--lf-neutral-6); }
+.toc a:hover { color: var(--lf-neutral-10); background: var(--lf-hover-bg); }
+.toc a.active { background: var(--lf-active-bg); border-left-color: var(--lf-brand); color: var(--lf-brand-active); font-weight: 700; }
+
+.content-wrap { margin-left: 300px; flex: 1; display: flex; justify-content: center; padding: 2.5rem 2rem 7rem; }
+.doc-content { max-width: 840px; width: 100%; }
+
+/* Headings — learn.liferay.com's article headings are plain, undecorated:
+   no colored rule under h1, just weight and the neutral-10 ink. */
+.doc-content h1 { font-size: 2rem; line-height: 1.25; margin: 0 0 1rem; color: var(--lf-neutral-10); font-weight: 700; }
+.doc-content h1 + p { font-size: 1.1rem; color: var(--lf-neutral-6); margin-top: 0; }
+.doc-content h2 {
+  font-size: 1.5rem; margin: 2.75rem 0 1rem; padding-top: .75rem;
+  border-top: 1px solid var(--lf-neutral-2); color: var(--lf-neutral-10); font-weight: 700; scroll-margin-top: 78px;
+}
+.doc-content h2:first-of-type { border-top: 0; margin-top: 1.75rem; }
+.doc-content h3 { font-size: 1.2rem; margin: 2rem 0 .75rem; color: var(--lf-neutral-10); font-weight: 600; scroll-margin-top: 78px; }
+.doc-content h4 { font-size: 1rem; margin: 1.5rem 0 .6rem; color: var(--lf-neutral-10); font-weight: 600; scroll-margin-top: 78px; }
+.heading-anchor { margin-left: .45rem; opacity: 0; text-decoration: none; color: var(--lf-brand); font-weight: 400; font-size: .8em; }
+h2:hover .heading-anchor, h3:hover .heading-anchor, h4:hover .heading-anchor { opacity: 1; }
+
+/* Body text — learn.liferay.com renders article paragraphs in neutral-8,
+   reserving neutral-10 for headings and emphasis. */
+.doc-content p { margin: .85rem 0; color: var(--lf-neutral-8); }
+.doc-content strong { color: var(--lf-neutral-10); font-weight: 600; }
+.doc-content ul, .doc-content ol { padding-left: 1.4rem; }
+.doc-content li { margin: .3rem 0; color: var(--lf-neutral-8); }
+.doc-content hr { border: 0; border-top: 1px solid var(--lf-neutral-2); margin: 2.75rem 0; }
+.doc-content a { color: var(--lf-brand); }
+.doc-content a:hover { color: var(--lf-brand-active); text-decoration: underline; }
+.doc-content code {
+  font-family: var(--lf-font-mono); background: var(--lf-neutral-2); color: var(--lf-neutral-10);
+  padding: .125rem .4rem; border-radius: 4px; font-size: .88em;
+}
+em { color: inherit; }
+.doc-content img {
+  max-width: 100%; height: auto; display: block; margin: 1.1rem 0;
+  border: 1px solid var(--lf-neutral-2); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+/* Admonitions — learn.liferay.com's own "adm-*" callout vocabulary
+   (adm-warning / adm-note / adm-important), same background/text pairs. */
+.doc-content p.adm-block { padding: .75rem 1rem; border-radius: var(--lf-radius); margin: 1.1rem 0; }
+.doc-content p.adm-warning { background: var(--lf-warning-bg); color: var(--lf-warning-text); }
+.doc-content p.adm-note { background: var(--lf-success-bg); color: var(--lf-success-text); }
+.doc-content p.adm-important { background: var(--lf-info-bg); color: var(--lf-info-text); }
+.doc-content p.adm-block strong:first-child { color: inherit; }
+
+/* Blockquotes — learn.liferay.com's lightweight quoted style: a thin blue
+   rule and no filled background, used both for a short quoted prompt and
+   for a documentation aside that mixes prose with nested code examples. */
+.doc-content blockquote {
+  border-left: 2px solid var(--lf-brand); color: var(--lf-neutral-8);
+  font-size: 1.125rem; font-weight: 300; line-height: 1.5;
+  margin: 1.5rem 0; padding-left: 1.5rem;
+}
+.doc-content blockquote p { margin: .6rem 0; }
+.doc-content blockquote code { background: var(--lf-neutral-2); }
+.doc-content blockquote.aside { font-size: 1rem; font-weight: 400; }
+.doc-content blockquote.aside h3 { font-size: 1.1rem; margin-top: 0; }
+.doc-content blockquote.aside .copy-frame-code { margin: 1rem 0; }
+
+/* Prompt / copy frames: a dark "code" frame for fenced code (matching
+   learn.liferay.com's own pre[class*="language-"] surface) and a light
+   "quote" frame that leaves the blockquote's own thin-rule style intact. */
+.copy-frame { position: relative; margin: 1rem 0 1.6rem; }
+.copy-frame-code { border-radius: var(--lf-radius); overflow: hidden; background: var(--lf-neutral-9); }
+.copy-frame-code pre {
+  margin: 0; padding: 1em 3.4rem 1em 1.25rem; color: var(--lf-neutral-0);
+  background: transparent; border: 0; font-family: var(--lf-font-mono);
+  font-size: .9rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+}
+.copy-frame-code pre code { background: transparent; color: inherit; padding: 0; border-radius: 0; }
+.copy-frame-quote blockquote { margin: 0; padding-right: 3.2rem; }
+
+.copy-btn {
+  position: absolute; top: .6rem; right: .6rem; z-index: 2;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: transparent;
+  cursor: pointer; transition: background .15s ease, color .15s ease;
+}
+.copy-btn .icon-check { display: none; }
+.copy-btn.copied .icon-copy { display: none; }
+.copy-btn.copied .icon-check { display: inline; }
+.copy-frame-code .copy-btn { color: rgba(255,255,255,.75); }
+.copy-frame-code .copy-btn:hover { background: rgba(255,255,255,.12); color: var(--lf-neutral-0); }
+.copy-frame-quote .copy-btn { top: .4rem; color: var(--lf-neutral-6); }
+.copy-frame-quote .copy-btn:hover { background: var(--lf-hover-bg); color: var(--lf-brand-active); }
+.copy-btn.copied { color: var(--lf-success-text) !important; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 1.4rem 0; border: 1px solid var(--lf-neutral-2); border-radius: var(--lf-radius); }
+.doc-content table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+.doc-content th, .doc-content td { padding: .55rem .75rem; border-bottom: 1px solid var(--lf-neutral-2); text-align: left; vertical-align: top; color: var(--lf-neutral-8); }
+.doc-content thead th { background: var(--lf-neutral-1); color: var(--lf-neutral-10); font-weight: 600; position: sticky; top: 0; }
+.doc-content tbody tr:nth-child(even) { background: var(--lf-neutral-1); }
+
+/* Back to top */
+.back-to-top {
+  position: fixed; right: 1.5rem; bottom: 1.5rem; width: 44px; height: 44px; border-radius: 50%;
+  background: var(--lf-brand); color: #fff; border: 0; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(11,95,255,.35);
+  opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease, background .15s ease; z-index: 45; font-size: 1.1rem;
+}
+.back-to-top:hover { background: var(--lf-brand-active); transform: translateY(-2px); }
+.back-to-top.visible { opacity: 1; pointer-events: auto; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .menu-toggle { display: inline-flex; align-items: center; justify-content: center; }
+  .sidebar { transform: translateX(-100%); transition: transform .2s ease; box-shadow: 2px 0 14px rgba(0,0,0,.12); }
+  body.sidebar-open .sidebar { transform: translateX(0); }
+  .content-wrap { margin-left: 0; padding: 2rem 1.15rem 5rem; }
+  body.sidebar-open::after {
+    content: ""; position: fixed; inset: 60px 0 0 0; background: rgba(40,41,52,.35); z-index: 39;
+  }
+}
+
+@media print {
+  .topbar, .sidebar, .copy-btn, .menu-toggle, .back-to-top { display: none !important; }
+  .content-wrap { margin-left: 0; padding: 0; }
+  .copy-frame-code { border: 1px solid #999; }
+  .copy-frame-code pre { color: #111; }
+  :root { --lf-neutral-9: #f4f4f4; }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <button class="menu-toggle" type="button" aria-label="Toggle table of contents">&#9776;</button>
+  <div class="logo"><span class="dot"></span>Liferay Learn</div>
+  <div class="doc-title">Quick Start: Fixing Blog Grammar with an AI Hub Agent Triggered from a DXP Workflow</div>
+  <div class="spacer"></div>
+</header>
+<div class="layout">
+  <nav class="sidebar" aria-label="Table of contents">
+    <input class="toc-filter" type="search" placeholder="Filter this guide&hellip;" aria-label="Filter table of contents">
+    <div class="toc"><ul><li class="toc-level-2"><a href="#1-building-blocks">1. Building blocks</a><ul><li class="toc-level-3"><a href="#the-ai-hub-agent-kaleo-node">The &lt;ai-hub-agent&gt; Kaleo node</a></li><li class="toc-level-3"><a href="#how-data-moves-between-the-two-workflows">How data moves between the two workflows</a></li><li class="toc-level-3"><a href="#groovy-actions-vs-a-workflowaction-client-extension">Groovy actions vs. a workflowAction client extension</a></li><li class="toc-level-3"><a href="#the-built-in-fix-spelling-and-grammar-agent">The built-in &quot;Fix Spelling and Grammar&quot; agent</a></li></ul></li><li class="toc-level-2"><a href="#2-step-by-step-tutorial">2. Step-by-step tutorial</a><ul><li class="toc-level-3"><a href="#step-1-prerequisites">Step 1 — Prerequisites</a><ul><li class="toc-level-4"><a href="#portal-extproperties-trusting-the-reverse-proxy">portal-ext.properties — trusting the reverse proxy</a></li></ul></li><li class="toc-level-3"><a href="#step-2-create-the-workflow-definition">Step 2 — Create the workflow definition</a></li><li class="toc-level-3"><a href="#step-3-reading-a-localized-field">Step 3 — Reading a localized field</a></li><li class="toc-level-3"><a href="#step-4-the-ai-hub-agent-node">Step 4 — The AI Hub Agent node</a></li><li class="toc-level-3"><a href="#step-5-writing-a-localized-field-back">Step 5 — Writing a localized field back</a></li><li class="toc-level-3"><a href="#step-6-attach-the-workflow-and-test">Step 6 — Attach the workflow and test</a></li></ul></li><li class="toc-level-2"><a href="#3-security-context-which-identity-do-rag-and-http-request-calls-use">3. Security context: which identity do RAG and HTTP Request calls use?</a></li><li class="toc-level-2"><a href="#4-recommendations">4. Recommendations</a></li><li class="toc-level-2"><a href="#5-other-business-use-cases-for-this-pattern">5. Other business use cases for this pattern</a></li><li class="toc-level-2"><a href="#references">References</a></li></ul></div>
+  </nav>
+  <div class="content-wrap">
+    <main class="doc-content">
+<h1 id="quick-start-fixing-blog-grammar-with-an-ai-hub-agent-triggered-from-a-dxp-workflow">Quick Start: Fixing Blog Grammar with an AI Hub Agent Triggered from a DXP Workflow</h1>
+<p>This quick start covers the <strong>AI Hub Agent</strong> node in Liferay's classic Kaleo
+workflow engine: a workflow definition running inside DXP itself (the same
+engine behind content approval processes) can synchronously invoke an AI Hub
+agent as one of its steps, pass it data, and use what it returns.</p>
+<p>The worked example is deliberately narrow: a Kaleo workflow attached to a
+<strong>Blog</strong> object reads the blog's <code>Content</code> field, sends it to AI Hub's
+built-in <strong>Fix Spelling and Grammar</strong> agent, and writes the corrected text
+back — fully automated, no human approval step.</p>
+<p>This quick start assumes you have already completed <em>AI Hub Quick Start 1 —
+HTTP Requests</em> and <em>AI Hub Quick Start 2 — RAG</em>: AI Hub enabled and connected
+to DXP, and an Internet-accessible HTTPS URL for your DXP environment.</p>
+<h2 id="1-building-blocks">1. Building blocks<a aria-hidden="true" class="heading-anchor" href="#1-building-blocks" tabindex="-1">#</a></h2>
+<h3 id="the-ai-hub-agent-kaleo-node">The <code>&lt;ai-hub-agent&gt;</code> Kaleo node<a aria-hidden="true" class="heading-anchor" href="#the-ai-hub-agent-kaleo-node" tabindex="-1">#</a></h3>
+<p>Liferay's core Kaleo workflow engine ships a node type dedicated to this:
+<code>NodeType.AI_HUB_AGENT</code>, implemented by
+<code>com.liferay.portal.workflow.kaleo.runtime.internal.node.AIHubAgentNodeExecutor</code>.
+It sits in a workflow definition next to the familiar <code>state</code>/<code>task</code>/<code>condition</code>
+nodes, and is gated by the <strong>same feature flag as the rest of AI Hub</strong>
+(<code>LPD-62272</code>).</p>
+<p>When the workflow engine enters this node, it:</p>
+<ol>
+<li>
+<p>Obtains an authorization token for the AI Hub Cell connection configured
+   on this DXP instance (the same connection you set up in Quick Start 1).</p>
+</li>
+<li>
+<p>Builds a JSON payload from every <code>Boolean</code>/<code>Number</code>/<code>String</code> entry
+   currently in the Kaleo workflow's context — this becomes the <code>context</code>
+   the agent receives.</p>
+</li>
+<li>
+<p>POSTs it, <strong>synchronously</strong>, to AI Hub's <code>agent-instances</code> endpoint and
+   waits for the response.</p>
+</li>
+<li>
+<p>Merges every key of the JSON response back into the workflow context,
+   then transitions to the node's single outgoing transition.</p>
+</li>
+</ol>
+<p>The node's own settings, configured directly in the workflow definition XML,
+are:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>agent-definition-external-reference-code</code></td>
+<td>Which AI Hub agent to invoke</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td>How long to wait for the agent's response, in milliseconds</td>
+</tr>
+</tbody>
+</table></div>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p class="adm-block adm-warning">⚠️ <strong>Set a realistic <code>timeout</code>.</strong> The default fallback if you omit the
+setting is 120000 (120s), which is reasonable — but if you set an explicit
+value, don't set it too low. A short-lived agent's own internal workflow
+(its LLM node, and any RAG or HTTP Request node it calls first) can easily
+take several seconds. <code>1000</code> (1 second) will fail almost every real
+invocation with a <code>SocketTimeoutException</code>, with no useful error beyond
+"Read timed out". <code>60000</code> is a safe starting point.</p>
+</blockquote></div>
+<h3 id="how-data-moves-between-the-two-workflows">How data moves between the two workflows<a aria-hidden="true" class="heading-anchor" href="#how-data-moves-between-the-two-workflows" tabindex="-1">#</a></h3>
+<p>The Kaleo <code>workflowContext</code> — the same <code>Map&lt;String, Serializable&gt;</code> a Kaleo
+workflow already carries from node to node — is the <strong>entire</strong> communication
+channel between the DXP workflow and the AI Hub agent's own, separate
+workflow. There is no other wiring: no dedicated input/output mapping UI on
+the <code>ai-hub-agent</code> node itself, nothing to configure beyond the agent's ERC
+and the timeout.</p>
+<ul>
+<li>
+<p><strong>DXP → AI Hub</strong>: every <code>Boolean</code>, <code>Number</code>, or <code>String</code> currently sitting
+  in <code>workflowContext</code> when the node fires gets sent as the agent's
+  <code>context</code> payload. Inside the agent's own workflow, each of those becomes
+  an ordinary input variable, referenced the normal way (<code>{{variableName}}</code>
+  in a prompt or a node's URL/body) — the agent has no way to tell that the
+  value came from a Kaleo workflow rather than a chat message or a manual
+  test.</p>
+</li>
+<li>
+<p><strong>AI Hub → DXP</strong>: the agent's result is merged back into that same
+  <code>workflowContext</code> before the workflow continues to its next node, as the
+  <code>output</code> variable — today, an agent invoked this way returns exactly one
+  output value, always under that literal key, regardless of how its
+  Output Variable is actually named in Agent Builder. If an agent's
+  workflow produces more than one piece of data you need, you currently
+  have to combine it into that single returned value yourself (for
+  example, as one JSON string) and parse it apart on the DXP side.</p>
+</li>
+</ul>
+<p>This is why, in this quick start's <code>read-content</code> action, setting
+<code>workflowContext.put("text", ...)</code> is enough for the agent's <code>text</code> input
+variable to be populated — no separate step declares that mapping anywhere.</p>
+<h3 id="groovy-actions-vs-a-workflowaction-client-extension">Groovy actions vs. a <code>workflowAction</code> client extension<a aria-hidden="true" class="heading-anchor" href="#groovy-actions-vs-a-workflowaction-client-extension" tabindex="-1">#</a></h3>
+<p>The <code>read-content</code> and <code>write-content</code> steps in this quick start are Groovy
+<code>&lt;action&gt;</code> scripts, running in-process inside DXP. That isn't the only way
+to script a Kaleo workflow step — Liferay also supports a <code>workflowAction</code>
+<strong>client extension</strong>: an external microservice (a Spring Boot app, for
+example) that DXP calls out to over HTTP for that step, authenticated with a
+token delegated to a specific user rather than running under the enclosing
+request's own identity.</p>
+<p>A client extension is the more production-shaped option — real code in a
+proper IDE with its own tests, deployed and versioned independently of the
+workflow definition — and, because of that per-user delegated token, it
+avoids some of the identity limitations described in Section 3. It also
+means more setup: a separate deployable artifact, its own OAuth2
+application, and routes wiring it to the workflow definition.</p>
+<p>For a quick start, a Groovy action is the fastest path to something working
+end to end: paste the script directly into the action in the Designer, no
+separate deployment, no additional OAuth2 configuration. That's the
+approach used throughout this guide; reach for a <code>workflowAction</code> client
+extension once similar logic is heading toward production.</p>
+<h3 id="the-built-in-fix-spelling-and-grammar-agent">The built-in "Fix Spelling and Grammar" agent<a aria-hidden="true" class="heading-anchor" href="#the-built-in-fix-spelling-and-grammar-agent" tabindex="-1">#</a></h3>
+<p>AI Hub ships a ready-to-use agent for this exact scenario
+(external reference code <code>L_FIX_SPELLING_AND_GRAMMAR</code>). Its contract, visible
+in <strong>AI Hub → Agent Builder</strong>:</p>
+<p><img alt="The Fix Spelling and Grammar agent's Details panel in Agent Builder, showing External Reference Code L_FIX_SPELLING_AND_GRAMMAR, Input Variables &quot;text&quot;, and Output Variable &quot;rewrittenText&quot;" src="images/spelling-agent.png"/></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Input Variables</td>
+<td><code>text</code></td>
+</tr>
+<tr>
+<td>Output Variable</td>
+<td><code>rewrittenText</code> (as named in Agent Builder — see below)</td>
+</tr>
+</tbody>
+</table></div>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p class="adm-block adm-warning">⚠️ <strong>Don't trust the Output Variable's name for what key to read.</strong> Per
+the note above, whatever this agent's Output Variable is actually named
+in Agent Builder, the value still arrives in <code>workflowContext</code> under the
+fixed key <code>output</code>. Reading the field's configured name instead (a very
+reasonable first guess) silently returns <code>null</code> — no error, the workflow
+completes normally, and nothing gets updated. Always confirm by logging
+the whole workflow context after the node runs (see Step 5) rather than
+assume.</p>
+</blockquote></div>
+<h2 id="2-step-by-step-tutorial">2. Step-by-step tutorial<a aria-hidden="true" class="heading-anchor" href="#2-step-by-step-tutorial" tabindex="-1">#</a></h2>
+<h3 id="step-1-prerequisites">Step 1 — Prerequisites<a aria-hidden="true" class="heading-anchor" href="#step-1-prerequisites" tabindex="-1">#</a></h3>
+<ul>
+<li>AI Hub enabled and connected to DXP (Quick Start 1, Steps 2–4).</li>
+<li>The <strong>Fix Spelling and Grammar</strong> agent enabled in <strong>AI Hub → Agent Builder</strong>.</li>
+<li>
+<p>A DXP object (native content type or a custom Object) with a text field to
+  correct. This quick start uses a custom <strong>Blog</strong> object with a <code>Content</code>
+  field (Rich Text, field name <code>content</code>, marked <strong>Localizable</strong>).</p>
+</li>
+<li>
+<p>Groovy scripting enabled: <strong>Control Panel → Configuration → System
+  Settings → Script Management</strong>, check <strong>"Allow administrator to create
+  and execute code in Liferay."</strong> This is what lets the <code>read-content</code> and
+  <code>write-content</code> actions' Groovy scripts run at all — with it off, every
+  action and validation that uses Groovy is silently deactivated.</p>
+</li>
+</ul>
+<p><img alt='System Settings → Script Management, with "Allow administrator to create and execute code in Liferay" checked' src="images/script-management.png"/></p>
+<ul>
+<li>If your DXP environment sits behind a tunnel such as ngrok (see Quick
+  Start 1's Prerequisites), make sure it's configured to let Liferay resolve
+  its own public URL correctly — see the note below. Several of the node's
+  internal HTTP calls (including a call DXP makes to itself to mint a token)
+  depend on this being right.</li>
+</ul>
+<h4 id="portal-extproperties-trusting-the-reverse-proxy"><code>portal-ext.properties</code> — trusting the reverse proxy<a aria-hidden="true" class="heading-anchor" href="#portal-extproperties-trusting-the-reverse-proxy" tabindex="-1">#</a></h4>
+<p>The <code>AIHubAgentNodeExecutor</code> node needs DXP to know its own correct public
+URL, including when it calls <strong>itself</strong> (<code>/o/ai-hub-cell/v1.0/authorization-tokens</code>)
+to obtain that token. Behind a tunnel like ngrok, this means telling Liferay
+to trust the tunnel's forwarded headers instead of guessing from its own
+local Tomcat port — otherwise the port DXP is actually listening on
+(commonly <code>8080</code>) leaks into URLs that are supposed to be the tunnel's
+public, portless HTTPS address, and outbound self-calls fail or hang.</p>
+<p>Add to <code>portal-ext.properties</code>:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-properties">web.server.http.port=80
+web.server.https.port=443
+
+web.server.forwarded.protocol.enabled=true
+web.server.forwarded.host.enabled=true
+web.server.forwarded.port.enabled=true
+</code></pre></div>
+<p>Two things worth calling out explicitly:</p>
+<ul>
+<li>
+<p><strong><code>web.server.https.port=443</code></strong> (not <code>-1</code>) matters on its own, separately
+  from the <code>forwarded.*</code> properties: some of the node's internal URL
+  resolution happens on a background thread with <strong>no active HTTP request</strong>
+  to read a forwarded-port header from in the first place (see the box
+  below) — in that situation only a <em>static</em> port value is used at all.
+  Setting it explicitly to the real HTTPS port (443) means no port suffix
+  ever gets appended to the resolved URL, matching what a bare <code>https://</code>
+  tunnel address actually needs.</p>
+</li>
+<li>
+<p><strong>Don't combine <code>web.server.forwarded.host.enabled=true</code> with a
+  manually-set <code>web.server.host</code>, or <code>forwarded.protocol.enabled=true</code> with a
+  manually-set <code>web.server.protocol</code>.</strong> Liferay's own documentation for
+  these properties is explicit that the static property must be left at its
+  default when the corresponding <code>forwarded.*.enabled</code> flag is on — setting
+  both leads to inconsistent, hard-to-diagnose URL resolution.</p>
+</li>
+</ul>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p class="adm-block adm-warning">⚠️ <strong>Why the port matters even though the call never leaves the machine.</strong>
+<code>AIHubAgentNodeExecutor</code> runs on a background executor thread, detached
+from any incoming HTTP request — there is no live request whose
+<code>X-Forwarded-Port</code> header it could read, even with <code>forwarded.port.enabled</code>
+on. Without a static <code>web.server.https.port</code>, URL resolution falls back to
+the JVM's <em>actual</em> listening port (e.g. <code>8080</code>), which then gets appended
+to what should be a bare <code>https://your-tunnel-host</code> address, and the
+resulting call fails. A generous node <code>timeout</code> (see above) won't fix
+this — no amount of waiting produces a valid response for a malformed
+URL. Restart Tomcat after changing <code>portal-ext.properties</code>; it's only read
+at startup.</p>
+</blockquote></div>
+<h3 id="step-2-create-the-workflow-definition">Step 2 — Create the workflow definition<a aria-hidden="true" class="heading-anchor" href="#step-2-create-the-workflow-definition" tabindex="-1">#</a></h3>
+<p>In <strong>Control Panel → Workflow → Workflow Designer</strong>, create a new workflow
+with this shape:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Start
+  |
+  v
+Read Content   (state, Groovy action onEntry)
+  |
+  v
+Fix Spelling and Grammar   (ai-hub-agent)
+  |
+  v
+Write Content   (state, Groovy action onEntry)
+  |
+  v
+Approved (terminal)
+</code></pre></div>
+<p>Full definition XML:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-xml">&lt;?xml version="1.0"?&gt;
+
+&lt;workflow-definition
+    xmlns="urn:liferay.com:liferay-workflow_7.4.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:liferay.com:liferay-workflow_7.4.0 http://www.liferay.com/dtd/liferay-workflow-definition_7_4_0.xsd"
+&gt;
+    &lt;name&gt;Blog Grammar Fixer&lt;/name&gt;
+    &lt;state&gt;
+        &lt;name&gt;created&lt;/name&gt;
+        &lt;metadata&gt;
+            &lt;![CDATA[
+                {
+                    "xy": [
+                        300,
+                        60
+                    ]
+                }
+            ]]&gt;
+        &lt;/metadata&gt;
+        &lt;initial&gt;true&lt;/initial&gt;
+        &lt;labels&gt;
+            &lt;label language-id="en_US"&gt;Start&lt;/label&gt;
+        &lt;/labels&gt;
+        &lt;transitions&gt;
+            &lt;transition&gt;
+                &lt;labels&gt;
+                    &lt;label language-id="en_US"&gt;Transition Label&lt;/label&gt;
+                &lt;/labels&gt;
+                &lt;name&gt;read-content&lt;/name&gt;
+                &lt;target&gt;read-content&lt;/target&gt;
+                &lt;default&gt;true&lt;/default&gt;
+            &lt;/transition&gt;
+        &lt;/transitions&gt;
+    &lt;/state&gt;
+    &lt;state&gt;
+        &lt;name&gt;read-content&lt;/name&gt;
+        &lt;description&gt;Reads the Blog object entry's content field into the workflow context.&lt;/description&gt;
+        &lt;metadata&gt;
+            &lt;![CDATA[
+                {
+                    "xy": [
+                        300,
+                        220
+                    ]
+                }
+            ]]&gt;
+        &lt;/metadata&gt;
+        &lt;actions&gt;
+            &lt;action&gt;
+                &lt;name&gt;Read Blog content&lt;/name&gt;
+                &lt;script&gt;
+                    &lt;![CDATA[
+                        import com.liferay.object.service.ObjectEntryLocalServiceUtil
+                        import com.liferay.portal.kernel.util.GetterUtil
+
+                        long objectEntryId = GetterUtil.getLong(workflowContext.get("entryClassPK"))
+
+                        def objectEntry = ObjectEntryLocalServiceUtil.getObjectEntry(objectEntryId)
+
+                        def contentI18n = (Map) objectEntry.getValues().get("content_i18n")
+
+                        workflowContext.put("text", (String) contentI18n?.get("en_US"))
+                    ]]&gt;
+                &lt;/script&gt;
+                &lt;script-language&gt;groovy&lt;/script-language&gt;
+                &lt;priority&gt;1&lt;/priority&gt;
+                &lt;execution-type&gt;onEntry&lt;/execution-type&gt;
+            &lt;/action&gt;
+        &lt;/actions&gt;
+        &lt;labels&gt;
+            &lt;label language-id="en_US"&gt;Read Content&lt;/label&gt;
+        &lt;/labels&gt;
+        &lt;transitions&gt;
+            &lt;transition&gt;
+                &lt;labels&gt;
+                    &lt;label language-id="en_US"&gt;Transition Label&lt;/label&gt;
+                &lt;/labels&gt;
+                &lt;name&gt;review&lt;/name&gt;
+                &lt;target&gt;review&lt;/target&gt;
+                &lt;default&gt;true&lt;/default&gt;
+            &lt;/transition&gt;
+        &lt;/transitions&gt;
+    &lt;/state&gt;
+    &lt;ai-hub-agent&gt;
+        &lt;name&gt;review&lt;/name&gt;
+        &lt;description&gt;Runs the Fix Spelling and Grammar AI Hub agent.&lt;/description&gt;
+        &lt;metadata&gt;
+            &lt;![CDATA[
+                {
+                    "xy": [
+                        300,
+                        380
+                    ]
+                }
+            ]]&gt;
+        &lt;/metadata&gt;
+        &lt;labels&gt;
+            &lt;label language-id="en_US"&gt;Fix Spelling and Grammar&lt;/label&gt;
+        &lt;/labels&gt;
+        &lt;agent-definition-external-reference-code&gt;L_FIX_SPELLING_AND_GRAMMAR&lt;/agent-definition-external-reference-code&gt;
+        &lt;timeout&gt;60000&lt;/timeout&gt;
+        &lt;transitions&gt;
+            &lt;transition&gt;
+                &lt;labels&gt;
+                    &lt;label language-id="en_US"&gt;Transition Label&lt;/label&gt;
+                &lt;/labels&gt;
+                &lt;name&gt;write-content&lt;/name&gt;
+                &lt;target&gt;write-content&lt;/target&gt;
+                &lt;default&gt;true&lt;/default&gt;
+            &lt;/transition&gt;
+        &lt;/transitions&gt;
+    &lt;/ai-hub-agent&gt;
+    &lt;state&gt;
+        &lt;name&gt;write-content&lt;/name&gt;
+        &lt;description&gt;Writes the AI agent's corrected text back onto the Blog object entry.&lt;/description&gt;
+        &lt;metadata&gt;
+            &lt;![CDATA[
+                {
+                    "xy": [
+                        300,
+                        540
+                    ]
+                }
+            ]]&gt;
+        &lt;/metadata&gt;
+        &lt;actions&gt;
+            &lt;action&gt;
+                &lt;name&gt;Write Blog content&lt;/name&gt;
+                &lt;script&gt;
+                    &lt;![CDATA[
+                        import com.liferay.object.service.ObjectEntryLocalServiceUtil
+                        import com.liferay.portal.kernel.service.ServiceContext
+                        import com.liferay.portal.kernel.util.GetterUtil
+                        import com.liferay.portal.kernel.util.Validator
+
+                        long objectEntryId = GetterUtil.getLong(workflowContext.get("entryClassPK"))
+
+                        def objectEntry = ObjectEntryLocalServiceUtil.getObjectEntry(objectEntryId)
+
+                        String rewrittenText = (String) workflowContext.get("output")
+
+                        if (Validator.isNotNull(rewrittenText)) {
+                            def values = new HashMap&lt;&gt;(objectEntry.getValues())
+
+                            values.put("content_i18n", ["en_US": rewrittenText])
+
+                            ObjectEntryLocalServiceUtil.updateObjectEntry(
+                                kaleoInstanceToken.getUserId(),
+                                objectEntryId,
+                                objectEntry.getObjectEntryFolderId(),
+                                values,
+                                new ServiceContext())
+                        }
+                    ]]&gt;
+                &lt;/script&gt;
+                &lt;script-language&gt;groovy&lt;/script-language&gt;
+                &lt;priority&gt;1&lt;/priority&gt;
+                &lt;execution-type&gt;onEntry&lt;/execution-type&gt;
+            &lt;/action&gt;
+        &lt;/actions&gt;
+        &lt;labels&gt;
+            &lt;label language-id="en_US"&gt;Write Content&lt;/label&gt;
+        &lt;/labels&gt;
+        &lt;transitions&gt;
+            &lt;transition&gt;
+                &lt;labels&gt;
+                    &lt;label language-id="en_US"&gt;Transition Label&lt;/label&gt;
+                &lt;/labels&gt;
+                &lt;name&gt;approve&lt;/name&gt;
+                &lt;target&gt;approved&lt;/target&gt;
+                &lt;default&gt;true&lt;/default&gt;
+            &lt;/transition&gt;
+        &lt;/transitions&gt;
+    &lt;/state&gt;
+    &lt;state&gt;
+        &lt;name&gt;approved&lt;/name&gt;
+        &lt;metadata&gt;
+            &lt;![CDATA[
+                {
+                    "terminal": true,
+                    "xy": [
+                        300,
+                        700
+                    ]
+                }
+            ]]&gt;
+        &lt;/metadata&gt;
+        &lt;labels&gt;
+            &lt;label language-id="en_US"&gt;Approved&lt;/label&gt;
+        &lt;/labels&gt;
+        &lt;actions&gt;
+            &lt;action&gt;
+                &lt;name&gt;approve&lt;/name&gt;
+                &lt;status&gt;0&lt;/status&gt;
+                &lt;execution-type&gt;onEntry&lt;/execution-type&gt;
+            &lt;/action&gt;
+        &lt;/actions&gt;
+    &lt;/state&gt;
+&lt;/workflow-definition&gt;
+</code></pre></div>
+<p><img alt="The Workflow Designer canvas for the Blog Grammar Fixer definition: Start, Read Content, Fix Spelling and Grammar, Write Content, Approved" src="images/workflow.png"/></p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p class="adm-block adm-warning">⚠️ <strong>The Workflow Designer's own parser is stricter than the Kaleo XSD.</strong>
+A hand-simplified XML that omits <code>&lt;metadata&gt;</code> (the <code>xy</code> canvas position)
+on a node, or <code>&lt;labels&gt;</code> on a transition, deploys and runs fine through
+the API — but re-opening or re-saving it through the Designer UI can throw
+a client-side JavaScript error (<code>Cannot read properties of undefined
+(reading '0')</code>, from the canvas trying to read <code>xy[0]</code> on a missing
+<code>metadata</code> block) and refuse to save. Always keep <code>&lt;metadata&gt;</code> and
+transition <code>&lt;labels&gt;</code> on every node, even ones you write by hand.</p>
+<p class="adm-block adm-warning">⚠️ <strong>Remove the <code>&lt;version&gt;</code> tag before pasting a workflow definition
+into the Designer.</strong> Every version of a workflow definition already
+deployed on your instance has its own <code>&lt;version&gt;</code> number, assigned by
+DXP — pasting in XML that includes one (the XML above included, and any
+XML you export from an existing definition through the Designer) can
+conflict with what's already there instead of being treated as a new
+revision. Strip the <code>&lt;version&gt;...&lt;/version&gt;</code> line before pasting either
+a fresh definition or an update to an existing one; DXP assigns the next
+version number itself on save.</p>
+</blockquote></div>
+<h3 id="step-3-reading-a-localized-field">Step 3 — Reading a localized field<a aria-hidden="true" class="heading-anchor" href="#step-3-reading-a-localized-field" tabindex="-1">#</a></h3>
+<p><code>ObjectEntryLocalServiceUtil.getObjectEntry(objectEntryId).getValues()</code>
+returns a <code>Map&lt;String, Serializable&gt;</code> that, for a <strong>localized</strong> field
+(<code>Content</code> here — <code>Localizable</code> is checked on its Content Structure field
+definition), actually contains <em>two</em> related entries: a flattened <code>content</code>
+key, and the raw per-language map under <code>content_i18n</code>
+(<code>&lt;fieldName&gt;_i18n</code> — the same key Step 5 writes to).</p>
+<p>The flattened <code>content</code> key is convenient, but it resolves to the object
+<strong>entry's own default language</strong> (<code>objectEntry.getDefaultLanguageId()</code>) —
+not necessarily <code>en_US</code>, and not necessarily the locale you actually want.
+To read a specific locale reliably, go through the <code>_i18n</code> map directly,
+the same way Step 5 writes to it:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-groovy">def contentI18n = (Map) objectEntry.getValues().get("content_i18n")
+
+workflowContext.put("text", (String) contentI18n?.get("en_US"))
+</code></pre></div>
+<p><code>entryClassPK</code> — the object entry's ID — is one of several standard keys
+Kaleo automatically populates in the workflow context when the workflow is
+attached to an object; no extra wiring needed to get it.</p>
+<h3 id="step-4-the-ai-hub-agent-node">Step 4 — The AI Hub Agent node<a aria-hidden="true" class="heading-anchor" href="#step-4-the-ai-hub-agent-node" tabindex="-1">#</a></h3>
+<p>Configure the <code>ai-hub-agent</code> node's settings (<code>agent-definition-external-reference-code</code>
+and <code>timeout</code> — see Step 2's XML) exactly as documented in <em>Building blocks</em>
+above. Nothing else is required on this node — no assignment, no additional
+input mapping. The agent reads <code>text</code> from the context automatically, and
+writes <code>output</code> back into it.</p>
+<h3 id="step-5-writing-a-localized-field-back">Step 5 — Writing a localized field back<a aria-hidden="true" class="heading-anchor" href="#step-5-writing-a-localized-field-back" tabindex="-1">#</a></h3>
+<p>This is the step that doesn't work the same way as reading. Writing a
+localized field's value requires two things <code>getValues()</code>'s convenient flat
+view hides from you:</p>
+<ol>
+<li>
+<p>The key isn't the field's own name (<code>content</code>) — it's
+   <code>&lt;fieldName&gt;_i18n</code> (<code>content_i18n</code> here). This is a fixed, mechanical
+   naming rule (<code>ObjectField.getI18nObjectFieldName()</code> returns
+   <code>getName() + "_i18n"</code>), not something configured per field.</p>
+</li>
+<li>
+<p>The value under that key must be a <code>Map&lt;String, String&gt;</code> keyed by
+   <strong>language ID</strong> (<code>"en_US"</code>, not a <code>Locale</code> object), not a plain <code>String</code>.</p>
+</li>
+</ol>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-groovy">def values = new HashMap&lt;&gt;(objectEntry.getValues())
+values.put("content_i18n", ["en_US": rewrittenText])
+
+ObjectEntryLocalServiceUtil.updateObjectEntry(
+    kaleoInstanceToken.getUserId(),
+    objectEntryId,
+    objectEntry.getObjectEntryFolderId(),
+    values,
+    new ServiceContext())
+</code></pre></div>
+<p>Passing <code>values.put("content", rewrittenText)</code> instead — the natural thing
+to try, matching what worked for reading — compiles, runs, and returns no
+error at all: the write silently updates nothing, because
+<code>ObjectEntryLocalServiceImpl</code> explicitly strips the bare field name (and the
+<code>_i18n</code> key, if present) from what it writes to the entry's main table for
+any field it knows is localized, and only consults the <code>_i18n</code> map for the
+dedicated localization table.</p>
+<blockquote class="aside">
+<p>✅ <strong>How to verify this instead of guessing.</strong> Log the entire
+<code>workflowContext</code> right after the <code>ai-hub-agent</code> node, before assuming
+what key or shape a value has:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-groovy">import com.liferay.portal.kernel.log.Log
+import com.liferay.portal.kernel.log.LogFactoryUtil
+
+Log _log = LogFactoryUtil.getLog("BlogGrammarFixer")
+_log.error("BlogGrammarFixer workflowContext: " + workflowContext)
+</code></pre></div>
+<p><code>_log.error(...)</code> is used deliberately here (not <code>.info()</code>) so the line
+is visible without first configuring <strong>Server Administration → Log
+Levels</strong> — remove it once you've confirmed the real key names and shapes
+for your own agent and fields.</p>
+</blockquote>
+<h3 id="step-6-attach-the-workflow-and-test">Step 6 — Attach the workflow and test<a aria-hidden="true" class="heading-anchor" href="#step-6-attach-the-workflow-and-test" tabindex="-1">#</a></h3>
+<p>Same as any Kaleo workflow: <strong>Control Panel → Objects → Blog → Details →
+enable workflow → select "Blog Grammar Fixer"</strong>, then create or edit a Blog
+entry with a deliberately misspelled <code>Content</code> field. Check
+<strong>Control Panel → Workflow → Submissions</strong> for the instance's status
+(<code>Approved</code> once the workflow completes), then re-open the entry — the
+<code>Content</code> field should show the corrected text.</p>
+<p><img alt="The Workflow Submissions list, showing several Blog Grammar Fixer instances with a Completed / Approved status" src="images/submissions.png"/></p>
+<h2 id="3-security-context-which-identity-do-rag-and-http-request-calls-use">3. Security context: which identity do RAG and HTTP Request calls use?<a aria-hidden="true" class="heading-anchor" href="#3-security-context-which-identity-do-rag-and-http-request-calls-use" tabindex="-1">#</a></h2>
+<p>This matters as soon as the agent you invoke from a Kaleo workflow does more
+than call an LLM — if its own internal workflow includes a <strong>RAG</strong> node
+(Search Blueprint) or an <strong>HTTP Request</strong> node (Quick Start 1 and 2), that
+node's outbound call needs <em>some</em> identity to authenticate as.</p>
+<p><strong>When triggered from a Kaleo workflow, that identity is the Virtual
+Instance's default user</strong> — not the content's author, and not whoever is
+logged into DXP at the time — <strong>with whatever permissions that account
+happens to have.</strong> Practical consequences:</p>
+<ul>
+<li>
+<p>A RAG retrieval scoped to content the default user can't see returns
+  nothing — not an error, just an empty or incomplete result, which can
+  look like a Search Blueprint or indexing problem when it's actually a
+  permissions problem.</p>
+</li>
+<li>
+<p>An HTTP Request node calling a DXP endpoint that requires elevated
+  permissions gets a <code>403</code>, the same class of error covered in Quick
+  Start 1 Step 6.</p>
+</li>
+<li>
+<p>This is a different security model from a chat-triggered invocation,
+  where the agent acts with the identity of whichever user is actually
+  signed in and talking to it.</p>
+</li>
+</ul>
+<p>This is a current limitation of triggering an agent from a Kaleo workflow,
+not a permanent design — expect AI Hub to offer more control over which
+identity an agent acts as in this scenario as the feature matures. For now,
+design around the default user's actual permissions: grant it exactly what
+this workflow needs, and no more.</p>
+<h2 id="4-recommendations">4. Recommendations<a aria-hidden="true" class="heading-anchor" href="#4-recommendations" tabindex="-1">#</a></h2>
+<ol>
+<li>
+<p>Remember <code>workflowContext</code> is the <em>only</em> channel between a Kaleo
+   workflow and an AI Hub agent's own workflow — every <code>Boolean</code>/<code>Number</code>/
+   <code>String</code> in it becomes an agent input variable, and whatever the agent
+   returns is merged straight back into it.</p>
+</li>
+<li>
+<p>An agent invoked this way currently returns exactly one output variable,
+   always under the literal key <code>output</code> — regardless of the Output
+   Variable's configured name in Agent Builder. Don't assume the configured
+   name is the key to read.</p>
+</li>
+<li>
+<p>Set a generous, explicit <code>timeout</code> on every <code>ai-hub-agent</code> node — a
+   short-lived agent workflow (LLM plus any RAG/HTTP Request node) can
+   easily take several seconds.</p>
+</li>
+<li>
+<p>If DXP sits behind a reverse-proxy tunnel (ngrok or similar), configure
+   <code>web.server.https.port</code> and the <code>web.server.forwarded.*.enabled</code>
+   properties <em>together</em>, correctly — this affects background, request-less
+   calls the node makes to itself, not just ordinary page URLs.</p>
+</li>
+<li>
+<p>For a <strong>localized</strong> field through <code>ObjectEntryLocalServiceUtil</code>, read
+   <em>and</em> write through the <code>&lt;fieldName&gt;_i18n</code> key (a <code>Map&lt;languageId,
+   value&gt;</code>) rather than the flattened field name — the flattened key
+   resolves to the object entry's own default language, not necessarily
+   the locale you actually want.</p>
+</li>
+<li>
+<p>If an agent's RAG or HTTP Request node needs to see private content or
+   call a protected endpoint, remember it's acting as the <strong>default user</strong>
+   when triggered from a Kaleo workflow — design the target Search Blueprint
+   scope and the target endpoint's required OAuth2 scope around that
+   account's actual permissions, not the workflow's or the content's owner.</p>
+</li>
+<li>
+<p>Log the full <code>workflowContext</code> (via <code>_log.error</code>, temporarily) the first
+   time you wire a new agent into a workflow, rather than assume a variable
+   name or a field's write shape.</p>
+</li>
+<li>
+<p>Keep <code>&lt;metadata&gt;</code> (with <code>xy</code>) and transition <code>&lt;labels&gt;</code> on every node,
+   even in a hand-written or simplified workflow definition XML — the
+   Workflow Designer's own save path is stricter than what a raw API deploy
+   accepts.</p>
+</li>
+<li>
+<p>Strip the <code>&lt;version&gt;</code> tag from any workflow definition XML before
+   pasting it into the Designer — whether it's from this guide or exported
+   from one of your own definitions — and let DXP assign the version number
+   on save.</p>
+</li>
+</ol>
+<h2 id="5-other-business-use-cases-for-this-pattern">5. Other business use cases for this pattern<a aria-hidden="true" class="heading-anchor" href="#5-other-business-use-cases-for-this-pattern" tabindex="-1">#</a></h2>
+<p>The worked example fixes spelling and grammar on a Blog entry, but the
+underlying mechanism — a Kaleo node calling an AI Hub agent synchronously,
+exchanging data through <code>workflowContext</code> — applies to any content-object
+workflow that can benefit from an LLM step:</p>
+<ol>
+<li>
+<p><strong>Auto-tagging / categorization</strong> — have the agent read an entry's
+    content and return suggested tags or categories, written back the same
+    way the corrected text is here.</p>
+</li>
+<li>
+<p><strong>SEO metadata generation</strong> — generate a meta title/description from
+    the content, feeding into an SEO Studio-managed field.</p>
+</li>
+<li>
+<p><strong>Translation draft generation</strong> — leverage the same <code>_i18n</code> write
+    pattern to populate a non-default locale with a machine-translated
+    draft, routed through a real, human-reviewed Task (not auto-completed)
+    before publication.</p>
+</li>
+<li>
+<p><strong>Content moderation / PII gate</strong> — have the agent flag risky or
+    sensitive content, and branch the workflow with a <code>&lt;condition&gt;</code> node
+    on its verdict instead of always auto-approving.</p>
+</li>
+<li>
+<p><strong>Support ticket classification / routing</strong> — call an agent to
+    classify an incoming ticket and set a routing field, before the
+    workflow assigns it to the right team.</p>
+</li>
+<li>
+<p><strong>Document summarization for approval queues</strong> — generate a short
+    summary alongside a long document so reviewers in a Task node can
+    triage faster.</p>
+</li>
+<li>
+<p><strong>RAG inside a Kaleo-triggered agent</strong> — combine this pattern with
+    Quick Start 2: the agent invoked from the workflow performs a RAG
+    lookup (e.g. against a policy knowledge base) before returning its
+    output, so a governance workflow can ground its decision in existing
+    documentation.</p>
+</li>
+</ol>
+<h2 id="references">References<a aria-hidden="true" class="heading-anchor" href="#references" tabindex="-1">#</a></h2>
+<ul>
+<li>
+<p>Previous quick starts in this series: <em>AI Hub Quick Start 1 — HTTP
+  Requests</em>, <em>AI Hub Quick Start 2 — Building a RAG Chatbot</em></p>
+</li>
+<li>
+<p>Liferay AI Hub integration: <a href="https://learn.liferay.com/w/ai-hub/integrating-ai-hub-with-liferay-dxp">learn.liferay.com/w/ai-hub/integrating-ai-hub-with-liferay-dxp</a></p>
+</li>
+<li>Object Storage / <code>ObjectEntryLocalServiceUtil</code>: Control Panel → Objects</li>
+</ul>
+    </main>
+  </div>
+</div>
+<button class="back-to-top" type="button" aria-label="Back to top">&#8593;</button>
+<script>
+
+(function () {
+  // Copy-to-clipboard for every prompt frame.
+  document.addEventListener("click", function (event) {
+    var btn = event.target.closest(".copy-btn");
+    if (!btn) return;
+    var frame = btn.closest(".copy-frame");
+    var target = frame.querySelector("pre, blockquote");
+    var text = target ? target.innerText : "";
+
+    function feedback() {
+      btn.classList.add("copied");
+      setTimeout(function () {
+        btn.classList.remove("copied");
+      }, 1500);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(feedback).catch(function () {
+        fallbackCopy(text, feedback);
+      });
+    } else {
+      fallbackCopy(text, feedback);
+    }
+  });
+
+  function fallbackCopy(text, done) {
+    var textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    try { document.execCommand("copy"); } catch (err) { /* no-op */ }
+    document.body.removeChild(textarea);
+    done();
+  }
+
+  // Mobile sidebar toggle.
+  var menuToggle = document.querySelector(".menu-toggle");
+  if (menuToggle) {
+    menuToggle.addEventListener("click", function () {
+      document.body.classList.toggle("sidebar-open");
+    });
+  }
+  document.querySelectorAll(".toc a").forEach(function (link) {
+    link.addEventListener("click", function () {
+      document.body.classList.remove("sidebar-open");
+    });
+  });
+
+  // Table-of-contents filter (recursively keeps a branch visible if any
+  // descendant entry matches).
+  var filterInput = document.querySelector(".toc-filter");
+  if (filterInput) {
+    filterInput.addEventListener("input", function () {
+      var query = filterInput.value.trim().toLowerCase();
+      document.querySelectorAll(".toc > ul > li").forEach(function (li) {
+        filterItem(li, query);
+      });
+    });
+  }
+
+  function filterItem(li, query) {
+    var link = li.querySelector(":scope > a");
+    var text = link ? link.textContent.toLowerCase() : "";
+    var childList = li.querySelector(":scope > ul");
+    var childMatch = false;
+    if (childList) {
+      childList.querySelectorAll(":scope > li").forEach(function (childLi) {
+        if (filterItem(childLi, query)) childMatch = true;
+      });
+    }
+    var selfMatch = !query || text.indexOf(query) !== -1;
+    var show = selfMatch || childMatch;
+    li.style.display = show ? "" : "none";
+    return show;
+  }
+
+  // Scroll-spy: highlight the current section in the sidebar.
+  var headings = document.querySelectorAll(".doc-content h2[id], .doc-content h3[id], .doc-content h4[id]");
+  var linkMap = {};
+  document.querySelectorAll(".toc a").forEach(function (a) {
+    linkMap[a.getAttribute("href").slice(1)] = a;
+  });
+
+  if ("IntersectionObserver" in window && headings.length) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = linkMap[entry.target.id];
+        if (!link || !entry.isIntersecting) return;
+        document.querySelectorAll(".toc a.active").forEach(function (a) { a.classList.remove("active"); });
+        link.classList.add("active");
+      });
+    }, { rootMargin: "0px 0px -72% 0px", threshold: 0 });
+    headings.forEach(function (h) { observer.observe(h); });
+  }
+
+  // Back-to-top button.
+  var backToTop = document.querySelector(".back-to-top");
+  if (backToTop) {
+    window.addEventListener("scroll", function () {
+      backToTop.classList.toggle("visible", window.scrollY > 600);
+    }, { passive: true });
+    backToTop.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quick Start: Calling REST APIs from Liferay AI Hub with HTTP Requests</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  /* Design tokens pulled from learn.liferay.com's own stylesheet
+     (https://liferaylearnglobalcss-exte5a2learn-extprd.lfr.cloud/global.css)
+     — the CSS custom-property fallback values there, e.g.
+     var(--color-brand-primary, #0b5fff), are learn.liferay.com's real
+     palette, not an approximation of it. */
+  --lf-brand: #0b5fff;
+  --lf-brand-hover: #0053f0;
+  --lf-brand-active: #004ad7;
+
+  --lf-neutral-0: #ffffff;
+  --lf-neutral-1: #f7f7f8;
+  --lf-neutral-2: #e2e2e4;
+  --lf-neutral-4: #b1b2b9;
+  --lf-neutral-6: #82828c;
+  --lf-neutral-8: #54555f;
+  --lf-neutral-9: #33343d;
+  --lf-neutral-10: #282934;
+
+  --lf-active-bg: #e6edfb;
+  --lf-hover-bg: #edf3fe;
+
+  --lf-warning-bg: #f7eae0;   --lf-warning-text: #944000;
+  --lf-success-bg: #e9f5e8;   --lf-success-text: #3b892f;
+  --lf-info-bg: #e6ebf5;      --lf-info-text: #25488a;
+
+  --lf-font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --lf-font-mono: 'Source Code Pro', Consolas, Menlo, "Liberation Mono", monospace;
+  --lf-radius: 0.5rem;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--lf-font-sans);
+  color: var(--lf-neutral-8);
+  background: var(--lf-neutral-0);
+  line-height: 1.6;
+}
+
+/* Top bar */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 60px;
+  background: var(--lf-neutral-0); color: var(--lf-neutral-10);
+  display: flex; align-items: center; gap: .75rem; padding: 0 1rem;
+  z-index: 50; border-bottom: 1px solid var(--lf-neutral-2);
+}
+.topbar .logo { font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: .45rem; letter-spacing: .01em; color: var(--lf-neutral-10); }
+.topbar .logo .dot { width: .55rem; height: .55rem; border-radius: 50%; background: var(--lf-brand); }
+.topbar .doc-title {
+  color: var(--lf-neutral-6); font-size: .85rem; border-left: 1px solid var(--lf-neutral-2);
+  padding-left: .75rem; margin-left: .1rem; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; max-width: 55vw;
+}
+.topbar .spacer { flex: 1; }
+.menu-toggle {
+  display: none; background: transparent; border: 1px solid var(--lf-neutral-2);
+  color: var(--lf-neutral-10); border-radius: 6px; padding: .3rem .55rem; font-size: 1rem; cursor: pointer;
+}
+
+/* Layout */
+.layout { display: flex; padding-top: 60px; min-height: 100vh; }
+.sidebar {
+  position: fixed; top: 60px; bottom: 0; left: 0; width: 300px;
+  overflow-y: auto; background: var(--lf-neutral-1); border-right: 1px solid var(--lf-neutral-2);
+  padding: 1rem .85rem 2.5rem; z-index: 40;
+}
+.toc-filter {
+  width: 100%; padding: .5rem .65rem; border: 1px solid var(--lf-neutral-2);
+  border-radius: 6px; font-size: .85rem; margin-bottom: .85rem; background: var(--lf-neutral-0);
+  font-family: inherit; color: var(--lf-neutral-10);
+}
+.toc ul { list-style: none; margin: 0; padding-left: 1rem; }
+.toc > div > ul, .toc > ul { padding-left: 0; }
+.toc a {
+  display: block; padding: .32rem .55rem .32rem .65rem; color: var(--lf-neutral-8);
+  text-decoration: none; font-size: .86rem; line-height: 1.35; border-left: 2px solid transparent;
+}
+.toc li.toc-level-2 > a { font-weight: 700; color: var(--lf-neutral-10); font-size: .9rem; margin-top: .4rem; }
+.toc li.toc-level-3 > a { font-weight: 500; }
+.toc li.toc-level-4 > a { font-size: .8rem; color: var(--lf-neutral-6); }
+.toc a:hover { color: var(--lf-neutral-10); background: var(--lf-hover-bg); }
+.toc a.active { background: var(--lf-active-bg); border-left-color: var(--lf-brand); color: var(--lf-brand-active); font-weight: 700; }
+
+.content-wrap { margin-left: 300px; flex: 1; display: flex; justify-content: center; padding: 2.5rem 2rem 7rem; }
+.doc-content { max-width: 840px; width: 100%; }
+
+/* Headings — learn.liferay.com's article headings are plain, undecorated:
+   no colored rule under h1, just weight and the neutral-10 ink. */
+.doc-content h1 { font-size: 2rem; line-height: 1.25; margin: 0 0 1rem; color: var(--lf-neutral-10); font-weight: 700; }
+.doc-content h1 + p { font-size: 1.1rem; color: var(--lf-neutral-6); margin-top: 0; }
+.doc-content h2 {
+  font-size: 1.5rem; margin: 2.75rem 0 1rem; padding-top: .75rem;
+  border-top: 1px solid var(--lf-neutral-2); color: var(--lf-neutral-10); font-weight: 700; scroll-margin-top: 78px;
+}
+.doc-content h2:first-of-type { border-top: 0; margin-top: 1.75rem; }
+.doc-content h3 { font-size: 1.2rem; margin: 2rem 0 .75rem; color: var(--lf-neutral-10); font-weight: 600; scroll-margin-top: 78px; }
+.doc-content h4 { font-size: 1rem; margin: 1.5rem 0 .6rem; color: var(--lf-neutral-10); font-weight: 600; scroll-margin-top: 78px; }
+.heading-anchor { margin-left: .45rem; opacity: 0; text-decoration: none; color: var(--lf-brand); font-weight: 400; font-size: .8em; }
+h2:hover .heading-anchor, h3:hover .heading-anchor, h4:hover .heading-anchor { opacity: 1; }
+
+/* Body text — learn.liferay.com renders article paragraphs in neutral-8,
+   reserving neutral-10 for headings and emphasis. */
+.doc-content p { margin: .85rem 0; color: var(--lf-neutral-8); }
+.doc-content strong { color: var(--lf-neutral-10); font-weight: 600; }
+.doc-content ul, .doc-content ol { padding-left: 1.4rem; }
+.doc-content li { margin: .3rem 0; color: var(--lf-neutral-8); }
+.doc-content hr { border: 0; border-top: 1px solid var(--lf-neutral-2); margin: 2.75rem 0; }
+.doc-content a { color: var(--lf-brand); }
+.doc-content a:hover { color: var(--lf-brand-active); text-decoration: underline; }
+.doc-content code {
+  font-family: var(--lf-font-mono); background: var(--lf-neutral-2); color: var(--lf-neutral-10);
+  padding: .125rem .4rem; border-radius: 4px; font-size: .88em;
+}
+em { color: inherit; }
+.doc-content img {
+  max-width: 100%; height: auto; display: block; margin: 1.1rem 0;
+  border: 1px solid var(--lf-neutral-2); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+/* Admonitions — learn.liferay.com's own "adm-*" callout vocabulary
+   (adm-warning / adm-note / adm-important), same background/text pairs. */
+.doc-content p.adm-block { padding: .75rem 1rem; border-radius: var(--lf-radius); margin: 1.1rem 0; }
+.doc-content p.adm-warning { background: var(--lf-warning-bg); color: var(--lf-warning-text); }
+.doc-content p.adm-note { background: var(--lf-success-bg); color: var(--lf-success-text); }
+.doc-content p.adm-important { background: var(--lf-info-bg); color: var(--lf-info-text); }
+.doc-content p.adm-block strong:first-child { color: inherit; }
+
+/* Blockquotes — learn.liferay.com's lightweight quoted style: a thin blue
+   rule and no filled background, used both for a short quoted prompt and
+   for a documentation aside that mixes prose with nested code examples. */
+.doc-content blockquote {
+  border-left: 2px solid var(--lf-brand); color: var(--lf-neutral-8);
+  font-size: 1.125rem; font-weight: 300; line-height: 1.5;
+  margin: 1.5rem 0; padding-left: 1.5rem;
+}
+.doc-content blockquote p { margin: .6rem 0; }
+.doc-content blockquote code { background: var(--lf-neutral-2); }
+.doc-content blockquote.aside { font-size: 1rem; font-weight: 400; }
+.doc-content blockquote.aside h3 { font-size: 1.1rem; margin-top: 0; }
+.doc-content blockquote.aside .copy-frame-code { margin: 1rem 0; }
+
+/* Prompt / copy frames: a dark "code" frame for fenced code (matching
+   learn.liferay.com's own pre[class*="language-"] surface) and a light
+   "quote" frame that leaves the blockquote's own thin-rule style intact. */
+.copy-frame { position: relative; margin: 1rem 0 1.6rem; }
+.copy-frame-code { border-radius: var(--lf-radius); overflow: hidden; background: var(--lf-neutral-9); }
+.copy-frame-code pre {
+  margin: 0; padding: 1em 3.4rem 1em 1.25rem; color: var(--lf-neutral-0);
+  background: transparent; border: 0; font-family: var(--lf-font-mono);
+  font-size: .9rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+}
+.copy-frame-code pre code { background: transparent; color: inherit; padding: 0; border-radius: 0; }
+.copy-frame-quote blockquote { margin: 0; padding-right: 3.2rem; }
+
+.copy-btn {
+  position: absolute; top: .6rem; right: .6rem; z-index: 2;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: transparent;
+  cursor: pointer; transition: background .15s ease, color .15s ease;
+}
+.copy-btn .icon-check { display: none; }
+.copy-btn.copied .icon-copy { display: none; }
+.copy-btn.copied .icon-check { display: inline; }
+.copy-frame-code .copy-btn { color: rgba(255,255,255,.75); }
+.copy-frame-code .copy-btn:hover { background: rgba(255,255,255,.12); color: var(--lf-neutral-0); }
+.copy-frame-quote .copy-btn { top: .4rem; color: var(--lf-neutral-6); }
+.copy-frame-quote .copy-btn:hover { background: var(--lf-hover-bg); color: var(--lf-brand-active); }
+.copy-btn.copied { color: var(--lf-success-text) !important; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 1.4rem 0; border: 1px solid var(--lf-neutral-2); border-radius: var(--lf-radius); }
+.doc-content table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+.doc-content th, .doc-content td { padding: .55rem .75rem; border-bottom: 1px solid var(--lf-neutral-2); text-align: left; vertical-align: top; color: var(--lf-neutral-8); }
+.doc-content thead th { background: var(--lf-neutral-1); color: var(--lf-neutral-10); font-weight: 600; position: sticky; top: 0; }
+.doc-content tbody tr:nth-child(even) { background: var(--lf-neutral-1); }
+
+/* Back to top */
+.back-to-top {
+  position: fixed; right: 1.5rem; bottom: 1.5rem; width: 44px; height: 44px; border-radius: 50%;
+  background: var(--lf-brand); color: #fff; border: 0; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(11,95,255,.35);
+  opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease, background .15s ease; z-index: 45; font-size: 1.1rem;
+}
+.back-to-top:hover { background: var(--lf-brand-active); transform: translateY(-2px); }
+.back-to-top.visible { opacity: 1; pointer-events: auto; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .menu-toggle { display: inline-flex; align-items: center; justify-content: center; }
+  .sidebar { transform: translateX(-100%); transition: transform .2s ease; box-shadow: 2px 0 14px rgba(0,0,0,.12); }
+  body.sidebar-open .sidebar { transform: translateX(0); }
+  .content-wrap { margin-left: 0; padding: 2rem 1.15rem 5rem; }
+  body.sidebar-open::after {
+    content: ""; position: fixed; inset: 60px 0 0 0; background: rgba(40,41,52,.35); z-index: 39;
+  }
+}
+
+@media print {
+  .topbar, .sidebar, .copy-btn, .menu-toggle, .back-to-top { display: none !important; }
+  .content-wrap { margin-left: 0; padding: 0; }
+  .copy-frame-code { border: 1px solid #999; }
+  .copy-frame-code pre { color: #111; }
+  :root { --lf-neutral-9: #f4f4f4; }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <button class="menu-toggle" type="button" aria-label="Toggle table of contents">&#9776;</button>
+  <div class="logo"><span class="dot"></span>Liferay Learn</div>
+  <div class="doc-title">Quick Start: Calling REST APIs from Liferay AI Hub with HTTP Requests</div>
+  <div class="spacer"></div>
+</header>
+<div class="layout">
+  <nav class="sidebar" aria-label="Table of contents">
+    <input class="toc-filter" type="search" placeholder="Filter this guide&hellip;" aria-label="Filter table of contents">
+    <div class="toc"><ul><li class="toc-level-2"><a href="#1-building-blocks">1. Building blocks</a><ul><li class="toc-level-3"><a href="#the-http-request-node">The HTTP Request node</a></li><li class="toc-level-3"><a href="#input-variables-and-output-variables">Input Variables and Output Variables</a></li><li class="toc-level-3"><a href="#authentication-is-automatic">Authentication is automatic</a></li></ul></li><li class="toc-level-2"><a href="#2-step-by-step-tutorial">2. Step-by-step tutorial</a><ul><li class="toc-level-3"><a href="#step-1-prerequisites">Step 1 — Prerequisites</a></li><li class="toc-level-3"><a href="#step-2-create-the-agent-and-its-workflow">Step 2 — Create the agent and its workflow</a></li><li class="toc-level-3"><a href="#step-3-configure-the-http-request-node">Step 3 — Configure the HTTP Request node</a></li><li class="toc-level-3"><a href="#step-4-wire-the-response-into-the-llm-node">Step 4 — Wire the response into the LLM node</a></li><li class="toc-level-3"><a href="#step-5-test-it-and-read-the-error-if-you-get-one">Step 5 — Test it, and read the error if you get one</a></li><li class="toc-level-3"><a href="#step-6-grant-the-oauth2-scope-the-endpoint-requires">Step 6 — Grant the OAuth2 scope the endpoint requires</a></li><li class="toc-level-3"><a href="#step-7-reading-the-access-token-directly">Step 7 — Reading the access token directly</a></li></ul></li><li class="toc-level-2"><a href="#3-reference-field-by-field-behavior">3. Reference: field-by-field behavior</a></li><li class="toc-level-2"><a href="#4-recommendations">4. Recommendations</a></li><li class="toc-level-2"><a href="#5-other-business-use-cases-for-this-pattern">5. Other business use cases for this pattern</a></li><li class="toc-level-2"><a href="#references">References</a></li></ul></div>
+  </nav>
+  <div class="content-wrap">
+    <main class="doc-content">
+<h1 id="quick-start-calling-rest-apis-from-liferay-ai-hub-with-http-requests">Quick Start: Calling REST APIs from Liferay AI Hub with HTTP Requests</h1>
+<p>This quick start covers the <strong>HTTP Request</strong> node in Liferay AI Hub: how to
+configure it, how it authenticates, and how to fix the two errors you are
+most likely to hit the first time you point it at a Liferay Headless API.</p>
+<p>This current quick start guide remains technical. It will evolve later as
+a more business related example.</p>
+<p>The worked example calls Liferay's own
+<code>GET /o/headless-admin-user/v1.0/my-user-account</code> endpoint and hands the
+result to an LLM node that turns it into a short greeting. It is
+deliberately simple: the point of this quick start is the plumbing, not
+the use case.</p>
+<h2 id="1-building-blocks">1. Building blocks<a aria-hidden="true" class="heading-anchor" href="#1-building-blocks" tabindex="-1">#</a></h2>
+<h3 id="the-http-request-node">The HTTP Request node<a aria-hidden="true" class="heading-anchor" href="#the-http-request-node" tabindex="-1">#</a></h3>
+<p>The HTTP Request node lets an agent's workflow call an arbitrary REST
+endpoint mid-conversation. This is what an agent needs whenever the
+answer depends on <strong>live, dynamic, or per-caller data</strong> — the current
+user's profile, an order status, a live system state — rather than on
+knowledge that a RAG / Search Blueprint retriever can find in the CMS.</p>
+<p>A workflow that uses it typically looks like:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Start
+  |
+  v
+HTTP Request  ---&gt;  calls a REST endpoint, stores the response in a variable
+  |
+  v
+LLM  ---&gt;  reads that variable and produces the user-facing answer
+  |
+  v
+End
+</code></pre></div>
+<p>The node exposes four groups of fields:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Information</td>
+<td>Label, Node Name (an internal identifier — leave it as generated), Description</td>
+</tr>
+<tr>
+<td>HTTP Endpoint</td>
+<td>HTTP Method, URL</td>
+</tr>
+<tr>
+<td>Payload</td>
+<td>Request Body</td>
+</tr>
+<tr>
+<td>Variables</td>
+<td>Input Variables, Output Variables</td>
+</tr>
+</tbody>
+</table></div>
+<p><img alt="The HTTP Request node, configured for a GET call" src="images/01-http-request-node.png"/></p>
+<h3 id="input-variables-and-output-variables">Input Variables and Output Variables<a aria-hidden="true" class="heading-anchor" href="#input-variables-and-output-variables" tabindex="-1">#</a></h3>
+<p>Both fields are JSON arrays of <code>{"name": "...", "type": "string"}</code>
+entries, and they are the <em>only</em> way data moves between the node and the
+rest of the workflow.</p>
+<p><strong>Input Variables</strong> declare which workflow variables can be injected into
+the <strong>URL</strong> and the <strong>Request Body</strong>, using a <code>{{name}}</code> placeholder. The
+same list applies to both fields — a variable declared once can be used
+in either, or both.</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-json">[
+  { "name": "customerId", "type": "string" }
+]
+</code></pre></div>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">URL:  https://example.com/o/c/orders/{{customerId}}
+</code></pre></div>
+<p>A few behaviors worth knowing before you rely on them:</p>
+<ul>
+<li>
+<p><strong>A variable that is not declared here will not be substituted</strong>, even
+  if it genuinely exists elsewhere in the workflow context. <code>{{name}}</code>
+  is then sent to the endpoint literally, as text — which is a common
+  source of a confusing failure that looks unrelated to variables at all.</p>
+</li>
+<li>
+<p>The <code>type</code> field is mostly there for the <code>json</code> option: a value marked
+  <code>"type": "json"</code> has its quotes, backslashes and line breaks escaped
+  before insertion, so it can be dropped safely inside a JSON Request
+  Body. Use <code>"string"</code> for anything going into the URL.</p>
+</li>
+<li>
+<p>A GET request needs no Request Body at all — leave the field empty.
+  If it resolves to an empty value, no body and no <code>Content-Type</code> header
+  are sent.</p>
+</li>
+</ul>
+<p><strong>Output Variables</strong> is where the response goes:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-json">[
+  { "name": "userInfo", "type": "string" }
+]
+</code></pre></div>
+<p>Two things to know here as well:</p>
+<ul>
+<li>
+<p><strong>Only the first entry in the array is used.</strong> If you list more than
+  one, the rest are silently ignored — one HTTP Request node produces
+  exactly one output variable.</p>
+</li>
+<li>
+<p>The value stored is the <strong>raw response body, as text</strong> — not a parsed
+  object. For a JSON API this means the variable holds the full JSON
+  document as one string. That is fine for handing to an LLM node (it
+  reads JSON text perfectly well), but if you need a single field out of
+  a larger response, plan on either a narrower endpoint or an LLM step
+  that extracts it — there is no field-picking inside this node.</p>
+</li>
+<li>
+<p>A non-2xx response stops the workflow at this node with an error,
+  rather than continuing with an empty or partial value. That is useful
+  for debugging: a failed call is loud, not silent.</p>
+</li>
+</ul>
+<h3 id="authentication-is-automatic">Authentication is automatic<a aria-hidden="true" class="heading-anchor" href="#authentication-is-automatic" tabindex="-1">#</a></h3>
+<p>The node always attaches an <code>Authorization: Bearer &lt;token&gt;</code> header for
+you — there is no field to configure it, and no field to add other
+custom headers at all. The only other header it can set is
+<code>Content-Type: application/json</code>, and only when a Request Body is
+actually sent.</p>
+<p>The token comes from the OAuth2 application that connects this AI Hub
+environment to your DXP instance (the same one you set up when you
+connected AI Hub to DXP). What it can and cannot call is therefore
+governed by <strong>that application's granted OAuth2 scopes</strong> — which is
+exactly what Step 6 below walks through.</p>
+<p>A default timeout of 10 seconds applies if you don't set one explicitly.</p>
+<h2 id="2-step-by-step-tutorial">2. Step-by-step tutorial<a aria-hidden="true" class="heading-anchor" href="#2-step-by-step-tutorial" tabindex="-1">#</a></h2>
+<h3 id="step-1-prerequisites">Step 1 — Prerequisites<a aria-hidden="true" class="heading-anchor" href="#step-1-prerequisites" tabindex="-1">#</a></h3>
+<ul>
+<li>
+<p>Liferay DXP with AI Hub enabled and connected (feature flag <strong>AI Hub
+  (LPD-62272)</strong>, then <strong>Control Panel → Instance Settings → AI Hub</strong>
+  configured with the Client ID / Client Secret from AI Hub). If this
+  isn't done yet, follow Steps 2–4 of the RAG quick start first — they
+  are identical regardless of which node you build afterwards.</p>
+</li>
+<li>
+<p>An <strong>Internet-accessible HTTPS URL</strong> for the DXP instance the HTTP
+  Request node should call. <code>localhost</code> is explicitly rejected — AI Hub
+  runs outside your network and refuses to resolve a local address as
+  its DXP environment. For local development, an HTTPS tunnel such as
+  <strong>ngrok</strong> works, but make sure requests reach DXP directly without an
+  interactive interstitial page in between — ngrok's free plan shows one
+  by default, which breaks unattended API calls, so a paid ngrok
+  configuration (or an equivalent tunnel without an interstitial) is the
+  practical option.</p>
+</li>
+<li>
+<p>Admin access to that DXP instance, to grant the OAuth2 scope in
+  Step 6.</p>
+</li>
+</ul>
+<h3 id="step-2-create-the-agent-and-its-workflow">Step 2 — Create the agent and its workflow<a aria-hidden="true" class="heading-anchor" href="#step-2-create-the-agent-and-its-workflow" tabindex="-1">#</a></h3>
+<p>In <strong>AI Hub → Agent Builder</strong>, create an agent and open <strong>Edit
+Workflow</strong>. Build a simple chain:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Start → HTTP Request → LLM → End
+</code></pre></div>
+<h3 id="step-3-configure-the-http-request-node">Step 3 — Configure the HTTP Request node<a aria-hidden="true" class="heading-anchor" href="#step-3-configure-the-http-request-node" tabindex="-1">#</a></h3>
+<p>Select the HTTP Request node and set:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP Method</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>https://&lt;your-dxp-host&gt;/o/headless-admin-user/v1.0/my-user-account</code></td>
+</tr>
+<tr>
+<td>Request Body</td>
+<td><em>(leave empty)</em></td>
+</tr>
+<tr>
+<td>Input Variables</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td>Output Variables</td>
+<td><code>[{"name": "userInfo", "type": "string"}]</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Note:</p>
+<ul>
+<li>From this node's very first execution, the workflow context also
+  carries a variable holding the DXP environment's own base URL — the
+  Website URL configured on the OAuth2 application (Step 6). Declaring
+  it as an input variable and writing the URL as
+  <code>{{aiHubCellLiferayDXPURL}}/o/headless-admin-user/v1.0/my-user-account</code>
+  avoids hardcoding the host, and guarantees you're calling back into
+  the exact same DXP instance the token was issued for.</li>
+</ul>
+<h3 id="step-4-wire-the-response-into-the-llm-node">Step 4 — Wire the response into the LLM node<a aria-hidden="true" class="heading-anchor" href="#step-4-wire-the-response-into-the-llm-node" tabindex="-1">#</a></h3>
+<p>Select the LLM node and set its <strong>Input Variables</strong> to include the
+output from the previous step, then reference it in the <strong>User
+Message</strong>:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-json">[
+  { "name": "userInfo", "type": "string" }
+]
+</code></pre></div>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">This is what you know about the user: {{userInfo}}
+</code></pre></div>
+<p><img alt="The LLM node consuming the HTTP Request node's output" src="images/02-llm-node.png"/></p>
+<h3 id="step-5-test-it-and-read-the-error-if-you-get-one">Step 5 — Test it, and read the error if you get one<a aria-hidden="true" class="heading-anchor" href="#step-5-test-it-and-read-the-error-if-you-get-one" tabindex="-1">#</a></h3>
+<p>Run the agent. At this point the most likely outcome is a <strong>403</strong> coming
+back from DXP. That's expected the first time — it means the call
+reached DXP and was rejected there, which rules out a networking or
+tunnel problem and points straight at the next step.</p>
+<h3 id="step-6-grant-the-oauth2-scope-the-endpoint-requires">Step 6 — Grant the OAuth2 scope the endpoint requires<a aria-hidden="true" class="heading-anchor" href="#step-6-grant-the-oauth2-scope-the-endpoint-requires" tabindex="-1">#</a></h3>
+<p>The Bearer token the node attaches is only as capable as the OAuth2
+application behind your AI Hub ↔ DXP connection. Each Headless API
+module requires a specific scope, and a call to an endpoint outside the
+application's granted scopes returns exactly the 403 you likely just
+saw.</p>
+<p>In DXP, go to <strong>Control Panel → OAuth 2 Administration</strong>, open that
+application, and check its <strong>Scopes</strong> tab.</p>
+<p><img alt="OAuth2 application credentials" src="images/03-oauth2-application-credentials.png"/></p>
+<p>For <code>/o/headless-admin-user/v1.0/my-user-account</code>, the required scope is
+under <strong>Liferay.Headless.Admin.User</strong>. Since this is a read-only GET
+call, the narrower <code>.read</code> variant is the right, least-privilege choice
+— no need for the broader scope that also grants create/update/delete.</p>
+<p><img alt="Granting the Liferay.Headless.Admin.User.everything.read scope" src="images/04-oauth2-application-scopes.png"/></p>
+<p>Save. Before trying again, end your Liferay session and login again
+in order to make sure AI Hub will work with a renewed OAuth 2.0 Token.</p>
+<p>The same logic applies to any other Headless module you call from an
+HTTP Request node: find its scope in the OAuth2 application's Scopes
+tab and grant only what the call actually needs (<code>.read</code> for GET,
+<code>.write</code> if you're also posting or updating).</p>
+<h3 id="step-7-reading-the-access-token-directly">Step 7 — Reading the access token directly<a aria-hidden="true" class="heading-anchor" href="#step-7-reading-the-access-token-directly" tabindex="-1">#</a></h3>
+<p>When a 403 (or 401) doesn't immediately make sense, it helps to look at
+the actual token rather than guess. If you're developing locally through
+a tunnel, its inspector (e.g. ngrok's web interface) lets you capture
+the outgoing request and copy the <code>Authorization: Bearer ...</code> value.
+Paste just the token into any JWT decoder to read its claims:</p>
+<p><img alt="Decoding the Bearer token with a JWT debugger" src="images/05-jwt-debugger.png"/></p>
+<p>Worth checking, in order:</p>
+<ul>
+<li>
+<p><strong><code>scope</code></strong> — the list of Liferay scopes this specific token carries.
+  If the one you just granted isn't listed, the token in hand predates
+  the change; the next run will mint a fresh one.</p>
+</li>
+<li>
+<p><strong><code>sub</code></strong> / <strong><code>username</code></strong> — the identity the call acts as. A
+  <code>"grant_type": "CLIENT_CREDENTIALS"</code> token acts as a <strong>fixed service
+  account</strong>, not as whichever person happens to be chatting with the
+  agent. This matters as soon as an endpoint's response is supposed to
+  reflect the actual end user — with this connection type, it won't;
+  <code>/my-user-account</code> will always return the same account.</p>
+</li>
+<li>
+<p><strong><code>iss</code></strong> — which DXP instance issued the token. It should match your
+  tunnel host; if it doesn't, the AI Hub environment is pointed at a
+  different DXP than you think.</p>
+</li>
+<li>
+<p><strong><code>aud</code></strong>, <strong><code>exp</code></strong> / <strong><code>iat</code></strong> — the intended audience and the
+  token's (usually short) validity window.</p>
+</li>
+</ul>
+<h2 id="3-reference-field-by-field-behavior">3. Reference: field-by-field behavior<a aria-hidden="true" class="heading-anchor" href="#3-reference-field-by-field-behavior" tabindex="-1">#</a></h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP Method</td>
+<td>Sent as-is (<code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code>, …)</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>{{name}}</code> placeholders substituted from Input Variables before the call</td>
+</tr>
+<tr>
+<td>Request Body</td>
+<td>Same substitution as URL; sent as <code>application/json</code> only if non-empty</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>10 seconds if not configured</td>
+</tr>
+<tr>
+<td>Headers</td>
+<td><code>Authorization: Bearer &lt;token&gt;</code> always; <code>Content-Type: application/json</code> only with a body; no custom headers field</td>
+</tr>
+<tr>
+<td>Input Variables</td>
+<td><code>[{"name","type"}]</code>; shared by URL and Request Body; undeclared names are not substituted</td>
+</tr>
+<tr>
+<td>Output Variables</td>
+<td><code>[{"name","type"}]</code>; only the first entry is used; stores the raw response body as text</td>
+</tr>
+<tr>
+<td>Non-2xx response</td>
+<td>Stops the workflow with an error at this node</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="4-recommendations">4. Recommendations<a aria-hidden="true" class="heading-anchor" href="#4-recommendations" tabindex="-1">#</a></h2>
+<ol>
+<li>
+<p>Treat the HTTP Request node as the way to reach <strong>live, per-call
+   data</strong> — use RAG / Search Blueprints for static knowledge instead.</p>
+</li>
+<li>
+<p>Always declare a variable as an Input Variable before referencing it
+   with <code>{{name}}</code> — an undeclared reference is a silent no-op, not an
+   error.</p>
+</li>
+<li>
+<p>Clear the Request Body for GET calls; don't leave placeholder text
+   in it.</p>
+</li>
+<li>
+<p>Grant the narrowest scope the call needs (<code>.read</code> for GET) rather
+   than the broad <code>.everything</code> scope.</p>
+</li>
+<li>
+<p>Prefer <code>{{aiHubCellLiferayDXPURL}}</code> over a hardcoded host when the
+   target is the same DXP instance the agent is connected to.</p>
+</li>
+<li>
+<p>Remember only the first Output Variable is used — one HTTP Request
+   node, one output. Chain a second node if you need to call a second
+   endpoint.</p>
+</li>
+<li>
+<p>When troubleshooting, separate the two layers: a 401 means the token
+   itself is the problem; a 403 means the token is fine but not
+   authorized — check the OAuth2 scope first, then the Service Access
+   Policy.</p>
+</li>
+<li>
+<p>Decode the actual token when a 403 doesn't make sense — <code>scope</code>,
+   <code>sub</code>/<code>username</code>, and <code>grant_type</code> answer most "why is this denied,
+   and as whom" questions directly.</p>
+</li>
+<li>
+<p>For local development, use a tunnel whose free tier doesn't inject an
+   interstitial page in front of API calls.</p>
+</li>
+</ol>
+<h2 id="5-other-business-use-cases-for-this-pattern">5. Other business use cases for this pattern<a aria-hidden="true" class="heading-anchor" href="#5-other-business-use-cases-for-this-pattern" tabindex="-1">#</a></h2>
+<p>The worked example is deliberately minimal — one <code>GET</code> call reading the
+current user's profile. The same building blocks (<code>{{name}}</code> substitution,
+one Output Variable, a <code>Bearer</code> token scoped to Liferay APIs) support a much
+wider range of scenarios:</p>
+<ol>
+<li>
+<p><strong>Order status assistant</strong> — <code>GET</code> a Headless Commerce order and let the
+   agent explain its status and delivery ETA in plain language.</p>
+</li>
+<li>
+<p><strong>Support ticket triage</strong> — <code>GET</code> a ticket's history from an Object API
+   and have the agent classify urgency or draft a suggested reply.</p>
+</li>
+<li>
+<p><strong>Stock/inventory check</strong> — <code>GET</code> Headless Commerce inventory levels and
+   suggest alternatives when an item is out of stock.</p>
+</li>
+<li>
+<p><strong>Chained lookups</strong> — a first HTTP Request node resolves an ID (e.g. a
+   customer account), a second uses that ID to fetch related data (its open
+   invoices); an LLM node combines both results.</p>
+</li>
+<li>
+<p><strong>Third-party / external system integration</strong> — the HTTP Request node
+   can only call <strong>Liferay APIs</strong>: its <code>Authorization: Bearer &lt;token&gt;</code>
+   header carries a Liferay-issued token, which a third-party API (a
+   weather service, a CRM, a currency exchange provider) has no reason to
+   accept. To bring external data into an agent this way, front the
+   third-party API with an <code>objectEntryManager</code> client extension — a proxy
+   service that calls the external API internally and exposes the result
+   as an ordinary Liferay Headless Object endpoint. From the HTTP Request
+   node's point of view, that's then just another Liferay API call.</p>
+</li>
+<li>
+<p><strong>Writing, not just reading</strong> — use <code>POST</code>/<code>PATCH</code> instead of <code>GET</code> to
+   create or update an Object Entry from the conversation, instead of only
+   ever fetching data.</p>
+</li>
+</ol>
+<h2 id="references">References<a aria-hidden="true" class="heading-anchor" href="#references" tabindex="-1">#</a></h2>
+<ul>
+<li>Liferay AI Hub integration: <a href="https://learn.liferay.com/w/ai-hub/integrating-ai-hub-with-liferay-dxp">learn.liferay.com/w/ai-hub/integrating-ai-hub-with-liferay-dxp</a></li>
+<li>Liferay Headless APIs: <a href="https://learn.liferay.com/w/dxp/integration/headless-apis">learn.liferay.com/w/dxp/integration/headless-apis</a></li>
+<li>OAuth 2 scopes and applications: Control Panel → OAuth 2 Administration</li>
+<li>Service Access Policy: Control Panel → Security → Service Access Policy</li>
+<li>Previous quick start in this series: <em>AI Hub Quick Start 2 — Building a RAG Chatbot</em></li>
+</ul>
+    </main>
+  </div>
+</div>
+<button class="back-to-top" type="button" aria-label="Back to top">&#8593;</button>
+<script>
+
+(function () {
+  // Copy-to-clipboard for every prompt frame.
+  document.addEventListener("click", function (event) {
+    var btn = event.target.closest(".copy-btn");
+    if (!btn) return;
+    var frame = btn.closest(".copy-frame");
+    var target = frame.querySelector("pre, blockquote");
+    var text = target ? target.innerText : "";
+
+    function feedback() {
+      btn.classList.add("copied");
+      setTimeout(function () {
+        btn.classList.remove("copied");
+      }, 1500);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(feedback).catch(function () {
+        fallbackCopy(text, feedback);
+      });
+    } else {
+      fallbackCopy(text, feedback);
+    }
+  });
+
+  function fallbackCopy(text, done) {
+    var textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    try { document.execCommand("copy"); } catch (err) { /* no-op */ }
+    document.body.removeChild(textarea);
+    done();
+  }
+
+  // Mobile sidebar toggle.
+  var menuToggle = document.querySelector(".menu-toggle");
+  if (menuToggle) {
+    menuToggle.addEventListener("click", function () {
+      document.body.classList.toggle("sidebar-open");
+    });
+  }
+  document.querySelectorAll(".toc a").forEach(function (link) {
+    link.addEventListener("click", function () {
+      document.body.classList.remove("sidebar-open");
+    });
+  });
+
+  // Table-of-contents filter (recursively keeps a branch visible if any
+  // descendant entry matches).
+  var filterInput = document.querySelector(".toc-filter");
+  if (filterInput) {
+    filterInput.addEventListener("input", function () {
+      var query = filterInput.value.trim().toLowerCase();
+      document.querySelectorAll(".toc > ul > li").forEach(function (li) {
+        filterItem(li, query);
+      });
+    });
+  }
+
+  function filterItem(li, query) {
+    var link = li.querySelector(":scope > a");
+    var text = link ? link.textContent.toLowerCase() : "";
+    var childList = li.querySelector(":scope > ul");
+    var childMatch = false;
+    if (childList) {
+      childList.querySelectorAll(":scope > li").forEach(function (childLi) {
+        if (filterItem(childLi, query)) childMatch = true;
+      });
+    }
+    var selfMatch = !query || text.indexOf(query) !== -1;
+    var show = selfMatch || childMatch;
+    li.style.display = show ? "" : "none";
+    return show;
+  }
+
+  // Scroll-spy: highlight the current section in the sidebar.
+  var headings = document.querySelectorAll(".doc-content h2[id], .doc-content h3[id], .doc-content h4[id]");
+  var linkMap = {};
+  document.querySelectorAll(".toc a").forEach(function (a) {
+    linkMap[a.getAttribute("href").slice(1)] = a;
+  });
+
+  if ("IntersectionObserver" in window && headings.length) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = linkMap[entry.target.id];
+        if (!link || !entry.isIntersecting) return;
+        document.querySelectorAll(".toc a.active").forEach(function (a) { a.classList.remove("active"); });
+        link.classList.add("active");
+      });
+    }, { rootMargin: "0px 0px -72% 0px", threshold: 0 });
+    headings.forEach(function (h) { observer.observe(h); });
+  }
+
+  // Back-to-top button.
+  var backToTop = document.querySelector(".back-to-top");
+  if (backToTop) {
+    window.addEventListener("scroll", function () {
+      backToTop.classList.toggle("visible", window.scrollY > 600);
+    }, { passive: true });
+    backToTop.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+})();
+
+</script>
+</body>
+</html>

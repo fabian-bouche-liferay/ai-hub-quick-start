@@ -1,0 +1,1129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quick Start: Building a RAG Chatbot with Liferay AI Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  /* Design tokens pulled from learn.liferay.com's own stylesheet
+     (https://liferaylearnglobalcss-exte5a2learn-extprd.lfr.cloud/global.css)
+     — the CSS custom-property fallback values there, e.g.
+     var(--color-brand-primary, #0b5fff), are learn.liferay.com's real
+     palette, not an approximation of it. */
+  --lf-brand: #0b5fff;
+  --lf-brand-hover: #0053f0;
+  --lf-brand-active: #004ad7;
+
+  --lf-neutral-0: #ffffff;
+  --lf-neutral-1: #f7f7f8;
+  --lf-neutral-2: #e2e2e4;
+  --lf-neutral-4: #b1b2b9;
+  --lf-neutral-6: #82828c;
+  --lf-neutral-8: #54555f;
+  --lf-neutral-9: #33343d;
+  --lf-neutral-10: #282934;
+
+  --lf-active-bg: #e6edfb;
+  --lf-hover-bg: #edf3fe;
+
+  --lf-warning-bg: #f7eae0;   --lf-warning-text: #944000;
+  --lf-success-bg: #e9f5e8;   --lf-success-text: #3b892f;
+  --lf-info-bg: #e6ebf5;      --lf-info-text: #25488a;
+
+  --lf-font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --lf-font-mono: 'Source Code Pro', Consolas, Menlo, "Liberation Mono", monospace;
+  --lf-radius: 0.5rem;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--lf-font-sans);
+  color: var(--lf-neutral-8);
+  background: var(--lf-neutral-0);
+  line-height: 1.6;
+}
+
+/* Top bar */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 60px;
+  background: var(--lf-neutral-0); color: var(--lf-neutral-10);
+  display: flex; align-items: center; gap: .75rem; padding: 0 1rem;
+  z-index: 50; border-bottom: 1px solid var(--lf-neutral-2);
+}
+.topbar .logo { font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: .45rem; letter-spacing: .01em; color: var(--lf-neutral-10); }
+.topbar .logo .dot { width: .55rem; height: .55rem; border-radius: 50%; background: var(--lf-brand); }
+.topbar .doc-title {
+  color: var(--lf-neutral-6); font-size: .85rem; border-left: 1px solid var(--lf-neutral-2);
+  padding-left: .75rem; margin-left: .1rem; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; max-width: 55vw;
+}
+.topbar .spacer { flex: 1; }
+.menu-toggle {
+  display: none; background: transparent; border: 1px solid var(--lf-neutral-2);
+  color: var(--lf-neutral-10); border-radius: 6px; padding: .3rem .55rem; font-size: 1rem; cursor: pointer;
+}
+
+/* Layout */
+.layout { display: flex; padding-top: 60px; min-height: 100vh; }
+.sidebar {
+  position: fixed; top: 60px; bottom: 0; left: 0; width: 300px;
+  overflow-y: auto; background: var(--lf-neutral-1); border-right: 1px solid var(--lf-neutral-2);
+  padding: 1rem .85rem 2.5rem; z-index: 40;
+}
+.toc-filter {
+  width: 100%; padding: .5rem .65rem; border: 1px solid var(--lf-neutral-2);
+  border-radius: 6px; font-size: .85rem; margin-bottom: .85rem; background: var(--lf-neutral-0);
+  font-family: inherit; color: var(--lf-neutral-10);
+}
+.toc ul { list-style: none; margin: 0; padding-left: 1rem; }
+.toc > div > ul, .toc > ul { padding-left: 0; }
+.toc a {
+  display: block; padding: .32rem .55rem .32rem .65rem; color: var(--lf-neutral-8);
+  text-decoration: none; font-size: .86rem; line-height: 1.35; border-left: 2px solid transparent;
+}
+.toc li.toc-level-2 > a { font-weight: 700; color: var(--lf-neutral-10); font-size: .9rem; margin-top: .4rem; }
+.toc li.toc-level-3 > a { font-weight: 500; }
+.toc li.toc-level-4 > a { font-size: .8rem; color: var(--lf-neutral-6); }
+.toc a:hover { color: var(--lf-neutral-10); background: var(--lf-hover-bg); }
+.toc a.active { background: var(--lf-active-bg); border-left-color: var(--lf-brand); color: var(--lf-brand-active); font-weight: 700; }
+
+.content-wrap { margin-left: 300px; flex: 1; display: flex; justify-content: center; padding: 2.5rem 2rem 7rem; }
+.doc-content { max-width: 840px; width: 100%; }
+
+/* Headings — learn.liferay.com's article headings are plain, undecorated:
+   no colored rule under h1, just weight and the neutral-10 ink. */
+.doc-content h1 { font-size: 2rem; line-height: 1.25; margin: 0 0 1rem; color: var(--lf-neutral-10); font-weight: 700; }
+.doc-content h1 + p { font-size: 1.1rem; color: var(--lf-neutral-6); margin-top: 0; }
+.doc-content h2 {
+  font-size: 1.5rem; margin: 2.75rem 0 1rem; padding-top: .75rem;
+  border-top: 1px solid var(--lf-neutral-2); color: var(--lf-neutral-10); font-weight: 700; scroll-margin-top: 78px;
+}
+.doc-content h2:first-of-type { border-top: 0; margin-top: 1.75rem; }
+.doc-content h3 { font-size: 1.2rem; margin: 2rem 0 .75rem; color: var(--lf-neutral-10); font-weight: 600; scroll-margin-top: 78px; }
+.doc-content h4 { font-size: 1rem; margin: 1.5rem 0 .6rem; color: var(--lf-neutral-10); font-weight: 600; scroll-margin-top: 78px; }
+.heading-anchor { margin-left: .45rem; opacity: 0; text-decoration: none; color: var(--lf-brand); font-weight: 400; font-size: .8em; }
+h2:hover .heading-anchor, h3:hover .heading-anchor, h4:hover .heading-anchor { opacity: 1; }
+
+/* Body text — learn.liferay.com renders article paragraphs in neutral-8,
+   reserving neutral-10 for headings and emphasis. */
+.doc-content p { margin: .85rem 0; color: var(--lf-neutral-8); }
+.doc-content strong { color: var(--lf-neutral-10); font-weight: 600; }
+.doc-content ul, .doc-content ol { padding-left: 1.4rem; }
+.doc-content li { margin: .3rem 0; color: var(--lf-neutral-8); }
+.doc-content hr { border: 0; border-top: 1px solid var(--lf-neutral-2); margin: 2.75rem 0; }
+.doc-content a { color: var(--lf-brand); }
+.doc-content a:hover { color: var(--lf-brand-active); text-decoration: underline; }
+.doc-content code {
+  font-family: var(--lf-font-mono); background: var(--lf-neutral-2); color: var(--lf-neutral-10);
+  padding: .125rem .4rem; border-radius: 4px; font-size: .88em;
+}
+em { color: inherit; }
+.doc-content img {
+  max-width: 100%; height: auto; display: block; margin: 1.1rem 0;
+  border: 1px solid var(--lf-neutral-2); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+/* Admonitions — learn.liferay.com's own "adm-*" callout vocabulary
+   (adm-warning / adm-note / adm-important), same background/text pairs. */
+.doc-content p.adm-block { padding: .75rem 1rem; border-radius: var(--lf-radius); margin: 1.1rem 0; }
+.doc-content p.adm-warning { background: var(--lf-warning-bg); color: var(--lf-warning-text); }
+.doc-content p.adm-note { background: var(--lf-success-bg); color: var(--lf-success-text); }
+.doc-content p.adm-important { background: var(--lf-info-bg); color: var(--lf-info-text); }
+.doc-content p.adm-block strong:first-child { color: inherit; }
+
+/* Blockquotes — learn.liferay.com's lightweight quoted style: a thin blue
+   rule and no filled background, used both for a short quoted prompt and
+   for a documentation aside that mixes prose with nested code examples. */
+.doc-content blockquote {
+  border-left: 2px solid var(--lf-brand); color: var(--lf-neutral-8);
+  font-size: 1.125rem; font-weight: 300; line-height: 1.5;
+  margin: 1.5rem 0; padding-left: 1.5rem;
+}
+.doc-content blockquote p { margin: .6rem 0; }
+.doc-content blockquote code { background: var(--lf-neutral-2); }
+.doc-content blockquote.aside { font-size: 1rem; font-weight: 400; }
+.doc-content blockquote.aside h3 { font-size: 1.1rem; margin-top: 0; }
+.doc-content blockquote.aside .copy-frame-code { margin: 1rem 0; }
+
+/* Prompt / copy frames: a dark "code" frame for fenced code (matching
+   learn.liferay.com's own pre[class*="language-"] surface) and a light
+   "quote" frame that leaves the blockquote's own thin-rule style intact. */
+.copy-frame { position: relative; margin: 1rem 0 1.6rem; }
+.copy-frame-code { border-radius: var(--lf-radius); overflow: hidden; background: var(--lf-neutral-9); }
+.copy-frame-code pre {
+  margin: 0; padding: 1em 3.4rem 1em 1.25rem; color: var(--lf-neutral-0);
+  background: transparent; border: 0; font-family: var(--lf-font-mono);
+  font-size: .9rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+}
+.copy-frame-code pre code { background: transparent; color: inherit; padding: 0; border-radius: 0; }
+.copy-frame-quote blockquote { margin: 0; padding-right: 3.2rem; }
+
+.copy-btn {
+  position: absolute; top: .6rem; right: .6rem; z-index: 2;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: transparent;
+  cursor: pointer; transition: background .15s ease, color .15s ease;
+}
+.copy-btn .icon-check { display: none; }
+.copy-btn.copied .icon-copy { display: none; }
+.copy-btn.copied .icon-check { display: inline; }
+.copy-frame-code .copy-btn { color: rgba(255,255,255,.75); }
+.copy-frame-code .copy-btn:hover { background: rgba(255,255,255,.12); color: var(--lf-neutral-0); }
+.copy-frame-quote .copy-btn { top: .4rem; color: var(--lf-neutral-6); }
+.copy-frame-quote .copy-btn:hover { background: var(--lf-hover-bg); color: var(--lf-brand-active); }
+.copy-btn.copied { color: var(--lf-success-text) !important; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 1.4rem 0; border: 1px solid var(--lf-neutral-2); border-radius: var(--lf-radius); }
+.doc-content table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+.doc-content th, .doc-content td { padding: .55rem .75rem; border-bottom: 1px solid var(--lf-neutral-2); text-align: left; vertical-align: top; color: var(--lf-neutral-8); }
+.doc-content thead th { background: var(--lf-neutral-1); color: var(--lf-neutral-10); font-weight: 600; position: sticky; top: 0; }
+.doc-content tbody tr:nth-child(even) { background: var(--lf-neutral-1); }
+
+/* Back to top */
+.back-to-top {
+  position: fixed; right: 1.5rem; bottom: 1.5rem; width: 44px; height: 44px; border-radius: 50%;
+  background: var(--lf-brand); color: #fff; border: 0; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; box-shadow: 0 2px 10px rgba(11,95,255,.35);
+  opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease, background .15s ease; z-index: 45; font-size: 1.1rem;
+}
+.back-to-top:hover { background: var(--lf-brand-active); transform: translateY(-2px); }
+.back-to-top.visible { opacity: 1; pointer-events: auto; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .menu-toggle { display: inline-flex; align-items: center; justify-content: center; }
+  .sidebar { transform: translateX(-100%); transition: transform .2s ease; box-shadow: 2px 0 14px rgba(0,0,0,.12); }
+  body.sidebar-open .sidebar { transform: translateX(0); }
+  .content-wrap { margin-left: 0; padding: 2rem 1.15rem 5rem; }
+  body.sidebar-open::after {
+    content: ""; position: fixed; inset: 60px 0 0 0; background: rgba(40,41,52,.35); z-index: 39;
+  }
+}
+
+@media print {
+  .topbar, .sidebar, .copy-btn, .menu-toggle, .back-to-top { display: none !important; }
+  .content-wrap { margin-left: 0; padding: 0; }
+  .copy-frame-code { border: 1px solid #999; }
+  .copy-frame-code pre { color: #111; }
+  :root { --lf-neutral-9: #f4f4f4; }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <button class="menu-toggle" type="button" aria-label="Toggle table of contents">&#9776;</button>
+  <div class="logo"><span class="dot"></span>Liferay Learn</div>
+  <div class="doc-title">Quick Start: Building a RAG Chatbot with Liferay AI Hub</div>
+  <div class="spacer"></div>
+</header>
+<div class="layout">
+  <nav class="sidebar" aria-label="Table of contents">
+    <input class="toc-filter" type="search" placeholder="Filter this guide&hellip;" aria-label="Filter table of contents">
+    <div class="toc"><ul><li class="toc-level-2"><a href="#1-the-problem">1. The problem</a></li><li class="toc-level-2"><a href="#2-building-blocks">2. Building blocks</a><ul><li class="toc-level-3"><a href="#liferay-cms">Liferay CMS</a></li><li class="toc-level-3"><a href="#search-blueprints">Search Blueprints</a></li><li class="toc-level-3"><a href="#search-workers">Search Workers</a></li><li class="toc-level-3"><a href="#answer-builder">Answer Builder</a></li><li class="toc-level-3"><a href="#native-supervisor">Native Supervisor</a></li></ul></li><li class="toc-level-2"><a href="#3-step-by-step-tutorial">3. Step-by-step tutorial</a><ul><li class="toc-level-3"><a href="#step-1-prerequisites">Step 1 --- Prerequisites</a></li><li class="toc-level-3"><a href="#step-2-enable-ai-hub-in-dxp">Step 2 --- Enable AI Hub in DXP</a></li><li class="toc-level-3"><a href="#step-3-configure-the-dxp-environment-in-ai-hub">Step 3 --- Configure the DXP environment in AI Hub</a></li><li class="toc-level-3"><a href="#step-4-connect-dxp-to-ai-hub">Step 4 --- Connect DXP to AI Hub</a></li><li class="toc-level-3"><a href="#step-5-deploy-the-northstar-corpus">Step 5 --- Deploy the Northstar corpus</a></li><li class="toc-level-3"><a href="#step-6-verify-the-search-blueprints">Step 6 — Verify the Search Blueprints</a></li><li class="toc-level-3"><a href="#step-7-create-a-search-worker">Step 7 --- Create a Search Worker</a></li><li class="toc-level-3"><a href="#step-8-configure-the-search-worker-workflow">Step 8 — Configure the Search Worker workflow</a><ul><li class="toc-level-4"><a href="#input-variables">Input Variables</a></li><li class="toc-level-4"><a href="#output-variables">Output Variables</a></li><li class="toc-level-4"><a href="#user-message">User Message</a></li><li class="toc-level-4"><a href="#retrieval-augmented-generation">Retrieval-Augmented Generation</a></li><li class="toc-level-4"><a href="#configure-the-prompt">Configure the prompt</a></li></ul></li><li class="toc-level-3"><a href="#step-9-create-the-other-search-workers">Step 9 — Create the other Search Workers</a><ul><li class="toc-level-4"><a href="#support-operations">Support &amp; Operations</a></li><li class="toc-level-4"><a href="#corporate-policy">Corporate &amp; Policy</a></li><li class="toc-level-4"><a href="#sales-customer">Sales &amp; Customer</a></li></ul></li><li class="toc-level-3"><a href="#step-10-create-the-answer-builder">Step 10 --- Create the Answer Builder</a></li><li class="toc-level-3"><a href="#step-11-configure-the-answer-builder-workflow">Step 11 --- Configure the Answer Builder workflow</a></li><li class="toc-level-3"><a href="#step-12-create-the-chatbot">Step 12 --- Create the chatbot</a></li></ul></li><li class="toc-level-2"><a href="#4-test-the-rag-strategy">4. Test the RAG Strategy</a><ul><li class="toc-level-3"><a href="#test-1-simple-factual-retrieval">Test 1 — Simple factual retrieval</a><ul><li class="toc-level-4"><a href="#expected-answer">Expected answer</a></li><li class="toc-level-4"><a href="#what-this-tests">What this tests</a></li></ul></li><li class="toc-level-3"><a href="#test-2-multi-hop-technical-investigation">Test 2 — Multi-hop technical investigation</a><ul><li class="toc-level-4"><a href="#expected-answer_1">Expected answer</a></li><li class="toc-level-4"><a href="#what-this-tests_1">What this tests</a></li></ul></li><li class="toc-level-3"><a href="#test-3-current-versus-superseded-information">Test 3 — Current versus superseded information</a><ul><li class="toc-level-4"><a href="#expected-answer_2">Expected answer</a></li><li class="toc-level-4"><a href="#what-this-tests_2">What this tests</a></li></ul></li><li class="toc-level-3"><a href="#test-4-country-specific-reasoning">Test 4 — Country-specific reasoning</a><ul><li class="toc-level-4"><a href="#expected-answer_3">Expected answer</a></li><li class="toc-level-4"><a href="#what-this-tests_3">What this tests</a></li></ul></li><li class="toc-level-3"><a href="#test-5-cross-domain-retrieval">Test 5 — Cross-domain retrieval</a><ul><li class="toc-level-4"><a href="#expected-answer_4">Expected answer</a></li><li class="toc-level-4"><a href="#what-this-tests_4">What this tests</a></li></ul></li><li class="toc-level-3"><a href="#test-6-challenge-a-false-premise">Test 6 — Challenge a false premise</a><ul><li class="toc-level-4"><a href="#expected-answer_5">Expected answer</a></li><li class="toc-level-4"><a href="#what-this-tests_5">What this tests</a></li></ul></li><li class="toc-level-3"><a href="#what-a-healthy-execution-looks-like">What a healthy execution looks like</a></li></ul></li><li class="toc-level-2"><a href="#5-recommendations">5. Recommendations</a></li><li class="toc-level-2"><a href="#6-other-business-use-cases-for-this-pattern">6. Other business use cases for this pattern</a></li><li class="toc-level-2"><a href="#references">References</a></li></ul></div>
+  </nav>
+  <div class="content-wrap">
+    <main class="doc-content">
+<h1 id="quick-start-building-a-rag-chatbot-with-liferay-ai-hub">Quick Start: Building a RAG Chatbot with Liferay AI Hub</h1>
+<p>This quick start builds a multi-agent RAG chatbot with <strong>Liferay AI
+Hub</strong> and <strong>Liferay DXP</strong>. The pattern uses <strong>1--N Search Worker
+agents</strong> for retrieval through Liferay Search Blueprints and <strong>1 Answer
+Builder agent</strong> for the final response. Orchestration is handled by the
+native Supervisor from the LangChain4j-based agentic framework
+underlying AI Hub.</p>
+<h2 id="1-the-problem">1. The problem<a aria-hidden="true" class="heading-anchor" href="#1-the-problem" tabindex="-1">#</a></h2>
+<p>To make the RAG scenario concrete, this quick start uses a fictional
+company called <strong>Northstar Mobility Group (NMG)</strong>.</p>
+<p>Northstar is a European B2B company providing electric-vehicle charging
+infrastructure and fleet-management services. Its product portfolio
+includes AC and DC charging stations, fleet-management software,
+energy-management software, installation services, and maintenance
+contracts.</p>
+<p>Like many enterprise organizations, Northstar has accumulated knowledge
+across different business domains:</p>
+<ul>
+<li>product documentation and technical specifications;</li>
+<li>firmware and software release notes;</li>
+<li>known technical issues;</li>
+<li>troubleshooting and maintenance procedures;</li>
+<li>corporate, HR, legal and compliance policies;</li>
+<li>sales playbooks and customer case studies.</li>
+</ul>
+<p>For this quick start, this knowledge is represented by a sample Liferay
+CMS corpus containing <strong>260 Content Entries</strong>. The corpus is
+intentionally designed so that related information is distributed across
+multiple documents and content types.</p>
+<p>This creates a more realistic RAG challenge than a collection of
+independent FAQ entries.</p>
+<p>For example, Northstar sells a professional EV charging station called
+the <strong>NX-400</strong>. Different documents in the corpus describe its technical
+capabilities, firmware releases, known issues and support procedures.</p>
+<p>A user can therefore ask:</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p><strong>Why did NX-400 units running firmware 4.8 lose their OCPP
+connection, and how was it fixed?</strong></p>
+</blockquote></div>
+<p>Answering this correctly may require several pieces of evidence:</p>
+<ul>
+<li>a known issue describing the incident;</li>
+<li>
+<p>engineering or release documentation identifying the affected
+    version;</p>
+</li>
+<li>
+<p>a release note describing the permanent fix;</p>
+</li>
+<li>potentially a support procedure describing the remediation.</li>
+</ul>
+<p>A basic RAG implementation might send the complete user question to a
+single search operation and generate an answer from the first retrieved
+documents.</p>
+<p>For enterprise knowledge, that is not always an effective retrieval
+strategy.</p>
+<p>Instead, we want the system to support:</p>
+<ol>
+<li>
+<p><strong>Query decomposition</strong> --- one user question can create several
+    retrieval needs.</p>
+</li>
+<li>
+<p><strong>Specialized retrieval</strong> --- different knowledge domains can use
+    different Liferay Search Blueprints.</p>
+</li>
+<li>
+<p><strong>Atomic retrieval</strong> --- when a specific document identifier is
+    known, retrieve that document individually.</p>
+</li>
+<li>
+<p><strong>Multi-step research</strong> --- one search can discover a document or
+    identifier that triggers another retrieval.</p>
+</li>
+<li>
+<p><strong>Final synthesis</strong> --- evidence gathering and user-facing answer
+    generation are separate responsibilities.</p>
+</li>
+</ol>
+<p>The target flow is:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">User
+  |
+  v
+Native Supervisor
+  |
+  +--&gt; Product &amp; Engineering Search Worker --&gt; Search Blueprint
+  +--&gt; Support &amp; Operations Search Worker --&gt; Search Blueprint
+  +--&gt; Corporate &amp; Policy Search Worker --&gt; Search Blueprint
+  +--&gt; Sales &amp; Customer Search Worker --&gt; Search Blueprint
+  |
+  v
+Answer Builder
+  |
+  v
+Final answer
+</code></pre></div>
+<p>The objective is not to maximize the number of agents or search calls.
+It is to <strong>retrieve the right evidence for each part of the question
+before building the final answer</strong>.</p>
+<h2 id="2-building-blocks">2. Building blocks<a aria-hidden="true" class="heading-anchor" href="#2-building-blocks" tabindex="-1">#</a></h2>
+<h3 id="liferay-cms">Liferay CMS<a aria-hidden="true" class="heading-anchor" href="#liferay-cms" tabindex="-1">#</a></h3>
+<p>The sample uses the fictional <strong>Northstar Mobility Group</strong> corpus: the
+<code>NMG-KNOWLEDGE</code> CMS Space, 9 folders, 9 list definitions/picklists, 11
+Content Structures, and <strong>260 Content Entries</strong> with products, releases,
+known issues, procedures, policies, playbooks, case studies, and
+historical/superseded information.</p>
+<p>Sample Client Extension:</p>
+<p><a href="https://github.com/fabian-bouche-liferay/northstar-sample-cms-space/tree/master">https://github.com/fabian-bouche-liferay/northstar-sample-cms-space/tree/master</a></p>
+<p>The repository is a batch Client Extension that recreates the corpus
+through Liferay's Headless Batch Engine.</p>
+<h3 id="search-blueprints">Search Blueprints<a aria-hidden="true" class="heading-anchor" href="#search-blueprints" tabindex="-1">#</a></h3>
+<p>Use four Search Blueprints:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Blueprint</th>
+<th>Knowledge</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product &amp; Engineering</td>
+<td>Products, specifications, versions, releases, known issues</td>
+</tr>
+<tr>
+<td>Support &amp; Operations</td>
+<td>Troubleshooting, remediation, installation, maintenance</td>
+</tr>
+<tr>
+<td>Corporate &amp; Policy</td>
+<td>Corporate, HR, legal and compliance</td>
+</tr>
+<tr>
+<td>Sales &amp; Customer</td>
+<td>Playbooks, use cases and customer case studies</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="search-workers">Search Workers<a aria-hidden="true" class="heading-anchor" href="#search-workers" tabindex="-1">#</a></h3>
+<p>Each Search Blueprint is exposed through an AI Hub agent. These agents
+are <strong>retrieval workers</strong>, not conversational personas.</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p><strong>The request delegated to a Search Worker is used directly as the RAG
+search query.</strong></p>
+</blockquote></div>
+<p>The Supervisor must therefore formulate the query before invoking the
+worker.</p>
+<h3 id="answer-builder">Answer Builder<a aria-hidden="true" class="heading-anchor" href="#answer-builder" tabindex="-1">#</a></h3>
+<p>The Answer Builder performs no CMS retrieval. It receives
+<code>originalRequest</code> and <code>gatheredInformation</code>, and produces <code>response</code>.</p>
+<h3 id="native-supervisor">Native Supervisor<a aria-hidden="true" class="heading-anchor" href="#native-supervisor" tabindex="-1">#</a></h3>
+<p>AI Hub uses the Supervisor pattern from the underlying LangChain4j
+agentic framework. The Supervisor is an LLM-driven coordinator that
+decides which sub-agents to invoke and in which order. Its general
+orchestration behavior comes from the framework rather than from a
+custom Supervisor prompt authored in this tutorial.</p>
+<p>This makes <strong>agent descriptions</strong> especially important: they tell the
+Supervisor when an agent should be used and, for Search Workers, what
+kind of request should be sent.</p>
+<h2 id="3-step-by-step-tutorial">3. Step-by-step tutorial<a aria-hidden="true" class="heading-anchor" href="#3-step-by-step-tutorial" tabindex="-1">#</a></h2>
+<h3 id="step-1-prerequisites">Step 1 --- Prerequisites<a aria-hidden="true" class="heading-anchor" href="#step-1-prerequisites" tabindex="-1">#</a></h3>
+<p>You need Liferay DXP <strong>2026.Q3 or later</strong>, access to Liferay AI Hub,
+administrator access to DXP, Search Blueprints, the Northstar sample
+Client Extension, and an Internet-accessible HTTPS URL for DXP.</p>
+<p>AI Hub must be able to call DXP APIs. A local-only <code>localhost</code> URL is
+not sufficient. For local development, an HTTPS tunnel such as <strong>ngrok</strong>
+can be used. API requests must reach DXP directly without an interactive
+intermediary page. In practice, ngrok's free interstitial can interfere
+with this use case, so a paid ngrok configuration is one possible
+approach.</p>
+<h3 id="step-2-enable-ai-hub-in-dxp">Step 2 --- Enable AI Hub in DXP<a aria-hidden="true" class="heading-anchor" href="#step-2-enable-ai-hub-in-dxp" tabindex="-1">#</a></h3>
+<p>Go to <strong>Control Panel → Instance Settings → Feature Flags → Release</strong>,
+find <strong>AI Hub (LPD-62272)</strong>, and enable it.</p>
+<p><img alt="Enable the AI Hub feature
+flag" src="images/01-enable-ai-hub-feature-flag.png"/></p>
+<h3 id="step-3-configure-the-dxp-environment-in-ai-hub">Step 3 --- Configure the DXP environment in AI Hub<a aria-hidden="true" class="heading-anchor" href="#step-3-configure-the-dxp-environment-in-ai-hub" tabindex="-1">#</a></h3>
+<p>Open <strong>AI Hub → Configurations</strong>.</p>
+<p><img alt="AI Hub account
+configuration" src="images/02-ai-hub-account-configuration.png"/></p>
+<p>The <strong>Environment URL is the public URL of your DXP environment</strong>. It is
+not a URL provided by AI Hub.</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">https://my-dxp.example.com
+</code></pre></div>
+<p>Enter the DXP URL and save. Copy the <strong>Client ID</strong> and <strong>Client Secret</strong>
+shown by AI Hub. Keep the Client Secret out of source control.</p>
+<h3 id="step-4-connect-dxp-to-ai-hub">Step 4 --- Connect DXP to AI Hub<a aria-hidden="true" class="heading-anchor" href="#step-4-connect-dxp-to-ai-hub" tabindex="-1">#</a></h3>
+<p>In DXP, go to <strong>Control Panel → Instance Settings → AI Hub</strong>.</p>
+<p><img alt="Configure AI Hub in Liferay
+DXP" src="images/03-dxp-ai-hub-configuration.png"/></p>
+<p>Configure:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Client ID</td>
+<td>Client ID from AI Hub</td>
+</tr>
+<tr>
+<td>Client Secret</td>
+<td>Client Secret from AI Hub</td>
+</tr>
+<tr>
+<td>Service URL</td>
+<td><code>https://ai.hub.liferay.com/</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Save the configuration.</p>
+<h3 id="step-5-deploy-the-northstar-corpus">Step 5 --- Deploy the Northstar corpus<a aria-hidden="true" class="heading-anchor" href="#step-5-deploy-the-northstar-corpus" tabindex="-1">#</a></h3>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-bash">git clone https://github.com/fabian-bouche-liferay/northstar-sample-cms-space.git
+</code></pre></div>
+<p>The repository documents this deployment command for a Liferay
+workspace:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-bash">blade gw ":client-extensions:nmg-corpus-batch:deploy"
+</code></pre></div>
+<p>This single deploy creates the <strong>Northstar Enterprise Knowledge</strong> Space, its
+260 Content Entries, <em>and</em> the 4 Search Blueprints described in Step 6 below
+— all in one Headless Batch Engine run, no separate step needed. Verify the
+Space and its Content Entries are available before moving on.</p>
+<h3 id="step-6-verify-the-search-blueprints">Step 6 — Verify the Search Blueprints<a aria-hidden="true" class="heading-anchor" href="#step-6-verify-the-search-blueprints" tabindex="-1">#</a></h3>
+<p>The sample uses four Search Blueprints, one for each knowledge domain:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Blueprint</th>
+<th>Knowledge</th>
+<th>ERC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Northstar product &amp; engineering</td>
+<td>Products, specifications, versions, releases, known issues</td>
+<td><code>NMG-BLUEPRINT-PRODUCT-ENGINEERING</code></td>
+</tr>
+<tr>
+<td>Northstar Support &amp; operations</td>
+<td>Troubleshooting, remediation, installation</td>
+<td><code>NMG-BLUEPRINT-SUPPORT-OPERATIONS</code></td>
+</tr>
+<tr>
+<td>Northstar Corporate &amp; Policy</td>
+<td>Corporate, HR, legal, compliance, and maintenance procedures</td>
+<td><code>NMG-BLUEPRINT-CORPORATE-POLICY</code></td>
+</tr>
+<tr>
+<td>Sales &amp; Customer</td>
+<td>Playbooks, use cases and customer case studies</td>
+<td><code>NMG-BLUEPRINT-SALES-CUSTOMER</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Verify with <strong>Global Menu → Applications → Search Experiences → Blueprints</strong>
+that all four Blueprints are present, or <code>GET
+/o/search-experiences-rest/v1.0/sxp-blueprints/by-external-reference-code/&lt;ERC&gt;</code>
+for each one above.</p>
+<p>You will use the ERCs from the table above when configuring the RAG workflow
+of the corresponding Search Worker agents in the next steps.</p>
+<h3 id="step-7-create-a-search-worker">Step 7 --- Create a Search Worker<a aria-hidden="true" class="heading-anchor" href="#step-7-create-a-search-worker" tabindex="-1">#</a></h3>
+<p>In <strong>AI Hub → Agent Builder</strong>, create and enable an agent.</p>
+<p><img alt="Create a Search Worker
+agent" src="images/05-create-search-worker-agent.png"/></p>
+<p>For Product &amp; Engineering:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Title: Northstar Product &amp; Engineering Agent
+Input Variables: request
+Output Variable: response
+</code></pre></div>
+<p>Recommended description:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Retrieval worker for Northstar product and engineering knowledge: product capabilities, specifications, hardware, firmware/software versions, compatibility, protocols, release notes, known issues, fixes and lifecycle. The request sent to this agent is used directly as the search query. Before invoking it, formulate a short, precise keyword query. Never send the original user question or a research instruction. Prefer product codes, versions, protocols, error codes, issue IDs and technical terms. Example: NX-400 firmware 4.8 OCPP issue. If a document ID is known, search for that ID only. Retrieve one document per invocation. Never combine multiple document IDs in one request. Invoke this agent multiple times when separate searches or documents are needed.
+</code></pre></div>
+<p>The description is part of the Supervisor's routing and invocation
+contract.</p>
+<h3 id="step-8-configure-the-search-worker-workflow">Step 8 — Configure the Search Worker workflow<a aria-hidden="true" class="heading-anchor" href="#step-8-configure-the-search-worker-workflow" tabindex="-1">#</a></h3>
+<p>Click <strong>Edit Workflow</strong> and create a simple <code>Start → Liferay Search → End</code> workflow.</p>
+<p><img alt="Search Worker workflow" src="images/06-search-worker-workflow.png"/></p>
+<p>Select the <strong>Liferay Search</strong> node and configure the following fields.</p>
+<h4 id="input-variables">Input Variables<a aria-hidden="true" class="heading-anchor" href="#input-variables" tabindex="-1">#</a></h4>
+<p>The Search Worker receives a single <code>request</code> variable from the Supervisor:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-json">[
+  {
+    "name": "request",
+    "type": "string"
+  }
+]
+</code></pre></div>
+<h4 id="output-variables">Output Variables<a aria-hidden="true" class="heading-anchor" href="#output-variables" tabindex="-1">#</a></h4>
+<p>The worker returns its findings through the <code>response</code> variable:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-json">[
+  {
+    "name": "response",
+    "type": "string"
+  }
+]
+</code></pre></div>
+<h4 id="user-message">User Message<a aria-hidden="true" class="heading-anchor" href="#user-message" tabindex="-1">#</a></h4>
+<p>Pass the request directly to the Liferay Search node:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">{{request}}
+</code></pre></div>
+<h4 id="retrieval-augmented-generation">Retrieval-Augmented Generation<a aria-hidden="true" class="heading-anchor" href="#retrieval-augmented-generation" tabindex="-1">#</a></h4>
+<p>Configure the Liferay content retriever with the External Reference Code of the Search Blueprint assigned to this worker.</p>
+<p>For the <strong>Product &amp; Engineering</strong> worker:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-json">{
+  "contentRetriever": {
+    "key": "liferay",
+    "blueprintExternalReferenceCode": "NMG-BLUEPRINT-PRODUCT-ENGINEERING"
+  }
+}
+</code></pre></div>
+<p>Use the corresponding Blueprint ERC from the table in Step 6 when configuring each of the other Search Workers.</p>
+<p>Conceptually:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">request
+  |
+  v
+{{request}}
+  |
+  v
+Liferay Search + Blueprint ERC
+  |
+  v
+response
+</code></pre></div>
+<h4 id="configure-the-prompt">Configure the prompt<a aria-hidden="true" class="heading-anchor" href="#configure-the-prompt" tabindex="-1">#</a></h4>
+<p>The prompt controls how the Search Worker interprets and returns the information retrieved by Liferay.</p>
+<p>For the Product &amp; Engineering Search Worker, use:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">You are the Northstar Product &amp; Engineering Retrieval Worker.
+
+Your role is to analyze the information retrieved from the Northstar product and engineering knowledge base and return factual evidence relevant to the request.
+
+Focus on product capabilities, technical specifications, hardware, firmware and software versions, compatibility, protocols, release notes, known issues, fixes and product lifecycle.
+
+Use only the retrieved information. Do not invent missing facts.
+
+Pay particular attention to product codes, versions, issue identifiers, release identifiers, dates and lifecycle status.
+
+When relevant, identify other document IDs mentioned in the retrieved information so that they can be retrieved separately.
+
+Return concise findings and preserve the identifiers of the documents supporting them.
+
+Do not try to produce the final user-facing answer. Your response will be used as evidence by other agents.
+</code></pre></div>
+<p>The distinction between the <strong>agent description</strong> and the <strong>workflow prompt</strong> is important:</p>
+<ul>
+<li>The <strong>description</strong> instructs the Supervisor how to invoke the Search Worker and how to formulate <code>request</code>.</li>
+<li>The <strong>prompt</strong> instructs the Search Worker how to interpret and return the information retrieved by the Search Blueprint.</li>
+</ul>
+<p>Because <code>{{request}}</code> is used directly by the RAG retriever, the workflow prompt cannot rewrite the search query before retrieval.</p>
+<p>Query-generation instructions such as:</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p><code>Convert the user's question into concise search keywords.</code></p>
+</blockquote></div>
+<p>therefore belong in the <strong>agent description</strong>, not in the workflow prompt.</p>
+<p>The workflow prompt should instead focus on:</p>
+<ul>
+<li>extracting relevant evidence;</li>
+<li>avoiding unsupported claims;</li>
+<li>preserving document identifiers;</li>
+<li>identifying useful follow-up document references;</li>
+<li>returning evidence rather than writing the final conversational answer.</li>
+</ul>
+<h3 id="step-9-create-the-other-search-workers">Step 9 — Create the other Search Workers<a aria-hidden="true" class="heading-anchor" href="#step-9-create-the-other-search-workers" tabindex="-1">#</a></h3>
+<p>Use the same variable and workflow contract as the Product &amp; Engineering Search Worker.</p>
+<p>For each agent:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Input Variables: request
+Output Variable: response
+</code></pre></div>
+<p>Use <code>{{request}}</code> as the User Message and configure the RAG field with the corresponding Search Blueprint ERC.</p>
+<hr/>
+<h4 id="support-operations">Support &amp; Operations<a aria-hidden="true" class="heading-anchor" href="#support-operations" tabindex="-1">#</a></h4>
+<p><strong>Description</strong></p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Retrieval worker for Northstar support and operations knowledge: troubleshooting, diagnostics, symptoms, error codes, workarounds, remediation, installation, configuration, commissioning, maintenance, procedures and escalation. The request sent to this agent is used directly as the search query. Before invoking it, formulate a short, precise keyword query. Never send the original user question or a research instruction. Prefer product codes, versions, error codes, symptoms, protocols and procedure terms. Example: NX-400 E217 OCPP remediation. If a document ID is known, search for that ID only. Retrieve one document per invocation. Never combine multiple document IDs in one request. Invoke this agent multiple times when separate searches or documents are needed.
+</code></pre></div>
+<p><strong>Prompt</strong></p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">You are the Northstar Support &amp; Operations Retrieval Worker.
+
+Your role is to analyze the information retrieved from the Northstar support and operations knowledge base and return factual evidence relevant to the request.
+
+Focus on troubleshooting, diagnostics, symptoms, error codes, workarounds, remediation, installation, configuration, commissioning, maintenance, procedures and escalation.
+
+Use only the retrieved information. Do not invent missing facts.
+
+Pay particular attention to product codes, versions, error codes, symptoms, procedure identifiers, remediation steps, verification steps and lifecycle status.
+
+When relevant, identify other document IDs mentioned in the retrieved information so that they can be retrieved separately.
+
+Return concise findings and preserve the identifiers of the documents supporting them.
+
+Do not try to produce the final user-facing answer. Your response will be used as evidence by other agents.
+</code></pre></div>
+<hr/>
+<h4 id="corporate-policy">Corporate &amp; Policy<a aria-hidden="true" class="heading-anchor" href="#corporate-policy" tabindex="-1">#</a></h4>
+<p><strong>Description</strong></p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Retrieval worker for Northstar corporate, legal, compliance and HR knowledge: policies, GDPR, data handling, security rules, authorization, employee policies, organizational information and country-specific requirements. The request sent to this agent is used directly as the search query. Before invoking it, formulate a short, precise keyword query. Never send the original user question or a research instruction. Prefer policy topics, countries, departments, dates and policy IDs. Example: Germany diagnostic logs retention policy. If a document ID is known, search for that ID only. Retrieve one document per invocation. Never combine multiple document IDs in one request. Invoke this agent multiple times when separate policies, countries or documents must be checked.
+</code></pre></div>
+<p><strong>Prompt</strong></p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">You are the Northstar Corporate &amp; Policy Retrieval Worker.
+
+Your role is to analyze the information retrieved from the Northstar corporate, legal, compliance and HR knowledge base and return factual evidence relevant to the request.
+
+Focus on policies, GDPR, data handling, security rules, authorization, employee policies, organizational information and country-specific requirements.
+
+Use only the retrieved information. Do not invent missing facts.
+
+Pay particular attention to policy IDs, countries, departments, scope, effective dates, lifecycle status, superseded policies and documented exceptions.
+
+When relevant, identify other policy or document IDs mentioned in the retrieved information so that they can be retrieved separately.
+
+Return concise findings and preserve the identifiers of the documents supporting them.
+
+Do not try to produce the final user-facing answer. Your response will be used as evidence by other agents.
+</code></pre></div>
+<hr/>
+<h4 id="sales-customer">Sales &amp; Customer<a aria-hidden="true" class="heading-anchor" href="#sales-customer" tabindex="-1">#</a></h4>
+<p><strong>Description</strong></p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Retrieval worker for Northstar sales and customer knowledge: sales playbooks, customer requirements, solution positioning, recommended configurations, customer deployments, use cases and case studies. The request sent to this agent is used directly as the search query. Before invoking it, formulate a short, precise keyword query. Never send the original user question or a research instruction. Prefer industry, country, deployment type, customer constraints, product family and case-study IDs. Example: Germany logistics fleet charging case study. If a document ID is known, search for that ID only. Retrieve one document per invocation. Never combine multiple document IDs in one request. Invoke this agent multiple times when separate playbooks, case studies or documents are needed.
+</code></pre></div>
+<p><strong>Prompt</strong></p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">You are the Northstar Sales &amp; Customer Retrieval Worker.
+
+Your role is to analyze the information retrieved from the Northstar sales and customer knowledge base and return factual evidence relevant to the request.
+
+Focus on sales playbooks, customer requirements, solution positioning, recommended configurations, deployment scenarios, customer case studies and documented outcomes.
+
+Use only the retrieved information. Do not invent missing facts.
+
+Pay particular attention to customer industry, country, deployment size, constraints, recommended products, case-study identifiers and documented results.
+
+When relevant, identify other playbook or case-study IDs mentioned in the retrieved information so that they can be retrieved separately.
+
+Return concise findings and preserve the identifiers of the documents supporting them.
+
+Do not try to produce the final user-facing answer. Your response will be used as evidence by other agents.
+</code></pre></div>
+<p>The same principle applies to all Search Workers:</p>
+<ul>
+<li>the <strong>description</strong> tells the Supervisor when to use the worker and how to formulate <code>request</code>;</li>
+<li>the <strong>prompt</strong> tells the worker how to interpret and return the information retrieved by its Search Blueprint;</li>
+<li>the worker should return evidence, not the final conversational answer.</li>
+</ul>
+<h3 id="step-10-create-the-answer-builder">Step 10 --- Create the Answer Builder<a aria-hidden="true" class="heading-anchor" href="#step-10-create-the-answer-builder" tabindex="-1">#</a></h3>
+<p>Create <strong>Northstar Knowledge Answer Builder Agent</strong>.</p>
+<p><img alt="Create the Answer Builder" src="images/07-create-answer-builder-agent.png"/></p>
+<p>Pay particular attention to the variables:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Input Variables: originalRequest,gatheredInformation
+Output Variable: response
+</code></pre></div>
+<p>Recommended description:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Final answer builder for the Northstar chatbot. Always invoke this agent after the required research has been completed. Provide the original user request together with all gathered evidence. This agent synthesizes the evidence into the final user-facing answer. Do not use it for knowledge retrieval.
+</code></pre></div>
+<h3 id="step-11-configure-the-answer-builder-workflow">Step 11 --- Configure the Answer Builder workflow<a aria-hidden="true" class="heading-anchor" href="#step-11-configure-the-answer-builder-workflow" tabindex="-1">#</a></h3>
+<p>The Answer Builder must consume <strong>both</strong> declared inputs:
+<code>originalRequest</code> and <code>gatheredInformation</code>. Its workflow should
+generate an answer <strong>without a Liferay RAG retriever</strong>.</p>
+<p>Use a User Message such as:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Original user request:
+{{originalRequest}}
+
+Gathered information:
+{{gatheredInformation}}
+</code></pre></div>
+<p>Recommended prompt:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">You are the final Answer Builder for the Northstar enterprise knowledge chatbot.
+
+Build a clear and direct answer to the original user request using the gathered information.
+
+Do not invent unsupported facts. Preserve important product, version, country, date and lifecycle qualifiers. When documents conflict, consider lifecycle status, effective date and applicability. Prefer current authoritative information over superseded, deprecated, archived or draft information.
+
+If the gathered information does not support part of the requested answer, say so explicitly. Answer the user's question rather than merely summarizing documents. Mention supporting document identifiers when available.
+</code></pre></div>
+<p>Write the result to <code>response</code>.</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Search Worker
+  input:  request
+  output: response
+  RAG:    yes
+
+Answer Builder
+  inputs: originalRequest + gatheredInformation
+  output: response
+  RAG:    no
+</code></pre></div>
+<h3 id="step-12-create-the-chatbot">Step 12 --- Create the chatbot<a aria-hidden="true" class="heading-anchor" href="#step-12-create-the-chatbot" tabindex="-1">#</a></h3>
+<p>Attach all five agents to the chatbot and enable the chatbot.</p>
+<p><img alt="Northstar chatbot" src="images/08-northstar-chatbot.png"/></p>
+<p>Find the html snippet on the bottom of the page:</p>
+<p><img alt="Northstar chatbot" src="images/09-chatbot-code.png"/></p>
+<p>And paste it inside of a DXP fragment</p>
+<p><img alt="Chatbot fragment" src="images/10-chatbot-fragment.png"/></p>
+<p>Now, you just have to put that fragment on a page and you can start asking questions to the chatbot.</p>
+<p>This example pastes the snippet into a DXP fragment because the Northstar page happens to live in Liferay DXP, but the snippet itself is a self-contained HTML/JavaScript widget with no dependency on DXP pages. It can just as well be embedded directly in the HTML of any third-party, non-Liferay website. A chatbot that leverages knowledge stored in Liferay is not limited to Liferay-hosted pages — it can be surfaced on any website.</p>
+<h2 id="4-test-the-rag-strategy">4. Test the RAG Strategy<a aria-hidden="true" class="heading-anchor" href="#4-test-the-rag-strategy" tabindex="-1">#</a></h2>
+<p>Now that the chatbot is configured, test more than the quality of its final prose.</p>
+<p>The following six questions exercise different aspects of the RAG strategy. For each one, compare the chatbot's answer against the expected answer below, and reason about whether it reflects the retrieval behavior described under "What this tests" — which Search Workers should have been involved, which search queries should have been formulated, and which documents should have been gathered before the Answer Builder responded.</p>
+<h3 id="test-1-simple-factual-retrieval">Test 1 — Simple factual retrieval<a aria-hidden="true" class="heading-anchor" href="#test-1-simple-factual-retrieval" tabindex="-1">#</a></h3>
+<p>Ask:</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p><strong>Does the NX-200 support OCPP 2.0.1?</strong></p>
+</blockquote></div>
+<h4 id="expected-answer">Expected answer<a aria-hidden="true" class="heading-anchor" href="#expected-answer" tabindex="-1">#</a></h4>
+<p>No. The NX-200 supports <strong>OCPP 1.6J</strong>. OCPP 2.0.1 support starts with the NX-400 and NX-450 in the Nova AC family and is also supported by the DX series.</p>
+<h4 id="what-this-tests">What this tests<a aria-hidden="true" class="heading-anchor" href="#what-this-tests" tabindex="-1">#</a></h4>
+<p>This is intentionally a simple question, but it tests <strong>retrieval precision</strong>.</p>
+<p>The NX-200 and NX-400 are semantically very similar products. A poor retrieval strategy may surface an NX-400 document and incorrectly conclude that the NX-200 also supports OCPP 2.0.1.</p>
+<p>A healthy execution should require only a focused Product &amp; Engineering search, for example:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">NX-200 OCPP version
+</code></pre></div>
+<p>The important point is not to trigger multiple agents unnecessarily. The Supervisor should recognize that one specialized retrieval is sufficient.</p>
+<hr/>
+<h3 id="test-2-multi-hop-technical-investigation">Test 2 — Multi-hop technical investigation<a aria-hidden="true" class="heading-anchor" href="#test-2-multi-hop-technical-investigation" tabindex="-1">#</a></h3>
+<p>Ask:</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p><strong>Why did NX-400 units running firmware 4.8 lose their OCPP connection, and how was it fixed?</strong></p>
+</blockquote></div>
+<h4 id="expected-answer_1">Expected answer<a aria-hidden="true" class="heading-anchor" href="#expected-answer_1" tabindex="-1">#</a></h4>
+<p>Firmware 4.8 introduced an intermittent OCPP backend disconnection affecting NX-400 dual-socket units under high session volume after approximately 72 hours of continuous uptime.</p>
+<p>The issue was identified as <strong>E217</strong> and traced to a session-token cache leak in the OCPP client.</p>
+<p>A temporary workaround consisted of scheduling a nightly OCPP reconnect through Polaris Charge Cloud.</p>
+<p>The permanent fix was delivered in <strong>firmware 4.8.1</strong>, which corrected the cache eviction logic.</p>
+<p>The answer should preserve the causal sequence:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">4.8 introduced the issue
+        ↓
+E217 / KI-NX400-004
+        ↓
+temporary workaround
+        ↓
+4.8.1 permanently fixed it
+</code></pre></div>
+<h4 id="what-this-tests_1">What this tests<a aria-hidden="true" class="heading-anchor" href="#what-this-tests_1" tabindex="-1">#</a></h4>
+<p>This is the flagship <strong>multi-hop retrieval</strong> test.</p>
+<p>A single semantic search may discover the issue, but that does not necessarily provide enough evidence for the complete answer.</p>
+<p>A healthy execution may progressively retrieve information such as:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">NX-400 firmware 4.8 OCPP issue
+        ↓
+KI-NX400-004
+        ↓
+KB-NX400-014
+        ↓
+NX-400 firmware 4.8.1 OCPP fix
+        ↓
+REL-NX400-4.8.1
+</code></pre></div>
+<p>The exact sequence may vary.</p>
+<p>What matters is that the system gathers enough evidence to establish both the <strong>cause</strong> and the <strong>resolution</strong>, rather than producing the second half from model knowledge or inference.</p>
+<p>The expected chain involves <code>REL-NX400-4.8</code>, <code>KI-NX400-004</code>, <code>KB-NX400-014</code>, and <code>REL-NX400-4.8.1</code>. :contentReference[oaicite:1]{index=1}</p>
+<hr/>
+<h3 id="test-3-current-versus-superseded-information">Test 3 — Current versus superseded information<a aria-hidden="true" class="heading-anchor" href="#test-3-current-versus-superseded-information" tabindex="-1">#</a></h3>
+<p>Ask:</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p><strong>How long does NMG retain charger diagnostic logs?</strong></p>
+</blockquote></div>
+<h4 id="expected-answer_2">Expected answer<a aria-hidden="true" class="heading-anchor" href="#expected-answer_2" tabindex="-1">#</a></h4>
+<p>The current retention period is <strong>60 days</strong>, according to <code>POL-DATA-002</code>, effective May 1, 2025.</p>
+<p>The answer may explain that the previous policy, <code>POL-DATA-001</code>, specified 90 days, but that policy has been <strong>superseded</strong>.</p>
+<p>The chatbot must not present 90 days as the current rule.</p>
+<h4 id="what-this-tests_2">What this tests<a aria-hidden="true" class="heading-anchor" href="#what-this-tests_2" tabindex="-1">#</a></h4>
+<p>This tests whether retrieval and synthesis distinguish <strong>semantic relevance from authority</strong>.</p>
+<p>Both the old and new policies are highly relevant to the same query:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">diagnostic log retention policy
+</code></pre></div>
+<p>The RAG system may therefore retrieve both.</p>
+<p>The Answer Builder must reason over metadata such as:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">POL-DATA-001
+90 days
+Superseded
+      ↓
+POL-DATA-002
+60 days
+Current
+</code></pre></div>
+<p>Retrieving the old document is not itself a failure. <strong>Treating the old document as authoritative is.</strong></p>
+<p>The corpus deliberately preserves both values to test this behavior. :contentReference[oaicite:2]{index=2}</p>
+<hr/>
+<h3 id="test-4-country-specific-reasoning">Test 4 — Country-specific reasoning<a aria-hidden="true" class="heading-anchor" href="#test-4-country-specific-reasoning" tabindex="-1">#</a></h3>
+<p>Ask:</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p><strong>If I'm a Gold support customer in Rotterdam, what's my on-site response time for a critical fault — and does that change if I'm elsewhere in the Netherlands?</strong></p>
+</blockquote></div>
+<h4 id="expected-answer_3">Expected answer<a aria-hidden="true" class="heading-anchor" href="#expected-answer_3" tabindex="-1">#</a></h4>
+<p>For Rotterdam, the critical Gold on-site response target is <strong>4 hours</strong>, because Rotterdam is one of the designated Dutch metropolitan areas.</p>
+<p>Outside the designated metropolitan areas in the Netherlands, the target is <strong>8 hours</strong>.</p>
+<p>The answer should therefore distinguish:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Rotterdam
+→ 4 hours
+
+Elsewhere in the Netherlands
+→ 8 hours
+</code></pre></div>
+<h4 id="what-this-tests_3">What this tests<a aria-hidden="true" class="heading-anchor" href="#what-this-tests_3" tabindex="-1">#</a></h4>
+<p>This tests whether the system preserves <strong>geographic scope</strong>.</p>
+<p>A generic Gold SLA document may establish the baseline rule, while another document provides country or metropolitan-area applicability.</p>
+<p>The Supervisor may therefore need more than one retrieval.</p>
+<p>The important failure mode is answering simply:</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p>"Gold support provides a 4-hour on-site response."</p>
+</blockquote></div>
+<p>That statement loses the geographic condition and incorrectly turns a local rule into a nationwide rule.</p>
+<p>The expected corpus behavior explicitly distinguishes Rotterdam and the other listed Dutch metro areas from the rest of the Netherlands. :contentReference[oaicite:3]{index=3}</p>
+<hr/>
+<h3 id="test-5-cross-domain-retrieval">Test 5 — Cross-domain retrieval<a aria-hidden="true" class="heading-anchor" href="#test-5-cross-domain-retrieval" tabindex="-1">#</a></h3>
+<p>Ask:</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p><strong>A logistics customer is asking which of NMG's case studies is most similar to their situation — which one, and what products did that customer deploy?</strong></p>
+</blockquote></div>
+<h4 id="expected-answer_4">Expected answer<a aria-hidden="true" class="heading-anchor" href="#expected-answer_4" tabindex="-1">#</a></h4>
+<p>The most relevant example is <strong>Greenway Logistics</strong> (<code>CASE-GREENWAY-001</code>), a 180-charging-point deployment at a logistics distribution hub in France.</p>
+<p>The answer should connect that case study with the <strong>Logistics Fleet sales playbook</strong> (<code>SALES-LOGISTICS-001</code>) and identify the relevant DX-series fast-charging products used for this type of logistics-hub deployment.</p>
+<h4 id="what-this-tests_4">What this tests<a aria-hidden="true" class="heading-anchor" href="#what-this-tests_4" tabindex="-1">#</a></h4>
+<p>This question tests <strong>discovery followed by exact retrieval</strong>.</p>
+<p>A Sales &amp; Customer Search Worker might first receive a discovery query such as:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">logistics fleet charging case study
+</code></pre></div>
+<p>The result can identify:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">CASE-GREENWAY-001
+</code></pre></div>
+<p>Once that identifier is known, the preferred behavior is to retrieve it individually:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">CASE-GREENWAY-001
+</code></pre></div>
+<p>The playbook may also need to be retrieved separately:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">SALES-LOGISTICS-001
+</code></pre></div>
+<p>This demonstrates why the Search Worker descriptions specify:</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p><strong>Retrieve one known document per invocation. Never combine multiple document IDs in one request.</strong></p>
+</blockquote></div>
+<p>The expected answer connects the Logistics Fleet playbook to the Greenway Logistics case study. :contentReference[oaicite:4]{index=4}</p>
+<hr/>
+<h3 id="test-6-challenge-a-false-premise">Test 6 — Challenge a false premise<a aria-hidden="true" class="heading-anchor" href="#test-6-challenge-a-false-premise" tabindex="-1">#</a></h3>
+<p>Ask:</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p><strong>Is KI-NX400-004 still an open, unresolved issue?</strong></p>
+</blockquote></div>
+<h4 id="expected-answer_5">Expected answer<a aria-hidden="true" class="heading-anchor" href="#expected-answer_5" tabindex="-1">#</a></h4>
+<p>No.</p>
+<p><code>KI-NX400-004</code> is marked <strong>Fixed</strong> and was resolved in firmware <strong>4.8.1</strong>.</p>
+<p>The chatbot should explicitly correct the premise of the question rather than describing the issue as if it were still active.</p>
+<h4 id="what-this-tests_5">What this tests<a aria-hidden="true" class="heading-anchor" href="#what-this-tests_5" tabindex="-1">#</a></h4>
+<p>This is an <strong>adversarial grounding</strong> test.</p>
+<p>The user supplies a plausible but incorrect assumption:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">KI-NX400-004
+        =
+still unresolved
+</code></pre></div>
+<p>A weak system may accept that premise and search only for information explaining the issue.</p>
+<p>A grounded system should retrieve the actual document state and respond:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">KI-NX400-004
+Status: Fixed
+Fixed in: 4.8.1
+</code></pre></div>
+<p>This tests an important enterprise RAG property: <strong>retrieved evidence must take precedence over assumptions embedded in the user's question</strong>.</p>
+<p>The evaluation corpus explicitly defines <code>KI-NX400-004</code> as fixed in firmware 4.8.1. :contentReference[oaicite:5]{index=5}</p>
+<hr/>
+<h3 id="what-a-healthy-execution-looks-like">What a healthy execution looks like<a aria-hidden="true" class="heading-anchor" href="#what-a-healthy-execution-looks-like" tabindex="-1">#</a></h3>
+<p>These tests are deliberately different. Do not expect every question to produce the same execution pattern.</p>
+<p>A simple factual question may legitimately require:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">1 worker
+→ 1 focused search
+→ Answer Builder
+</code></pre></div>
+<p>A complex question may require:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">discovery
+→ document ID
+→ exact retrieval
+→ another discovery
+→ another exact retrieval
+→ Answer Builder
+</code></pre></div>
+<p>A cross-domain question may instead require:</p>
+<div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Sales &amp; Customer Worker
+        +
+Product &amp; Engineering Worker
+        ↓
+Answer Builder
+</code></pre></div>
+<p>For every test, keep four questions in mind:</p>
+<ol>
+<li><strong>Did the Supervisor select the appropriate Search Worker or Workers?</strong></li>
+<li><strong>Were the delegated requests concise search queries rather than copies of the original conversational question?</strong></li>
+<li><strong>When document IDs became known, were documents retrieved individually rather than batched into one search request?</strong></li>
+<li><strong>Did the Answer Builder receive enough evidence to answer every important part of the original question without inventing missing information?</strong></li>
+</ol>
+<p>The goal is not a predetermined number of agent calls.</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p><strong>A good RAG execution performs as little retrieval as necessary, but as much retrieval as required to produce a complete and grounded answer.</strong></p>
+</blockquote></div>
+<h2 id="5-recommendations">5. Recommendations<a aria-hidden="true" class="heading-anchor" href="#5-recommendations" tabindex="-1">#</a></h2>
+<ol>
+<li>
+<p>Create Search Workers around meaningful retrieval domains, not
+    necessarily one per Content Structure.</p>
+</li>
+<li>
+<p>Use Search Blueprints to constrain retrieval scope.</p>
+</li>
+<li>Treat Search Workers as search interfaces, not personas.</li>
+<li>
+<p>Remember that the delegated <code>request</code> is the RAG query in this
+    workflow.</p>
+</li>
+<li>
+<p>Put query-formulation requirements in the agent description, because
+    the Supervisor sees it before invocation.</p>
+</li>
+<li>
+<p>Prefer short, discriminating terms: product codes, versions, error
+    codes, policy IDs, countries, industries, and document IDs.</p>
+</li>
+<li>
+<p>Never batch known document IDs into one search request.</p>
+</li>
+<li>
+<p>Allow multiple invocations when a question requires several
+    documents or domains.</p>
+</li>
+<li>
+<p>Keep the Search Worker contract consistent across domains.</p>
+</li>
+<li>
+<p>Use a dedicated Answer Builder and give it both <code>originalRequest</code>
+    and <code>gatheredInformation</code>.</p>
+</li>
+<li>
+<p>Do not attach RAG to the Answer Builder; its job is synthesis.</p>
+</li>
+<li>Judge an execution by whether the final answer reflects the right retrieval behavior, not only by its wording.</li>
+</ol>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p><strong>Let the native Supervisor plan. Let Search Workers retrieve. Let the
+Answer Builder answer.</strong></p>
+</blockquote></div>
+<h2 id="6-other-business-use-cases-for-this-pattern">6. Other business use cases for this pattern<a aria-hidden="true" class="heading-anchor" href="#6-other-business-use-cases-for-this-pattern" tabindex="-1">#</a></h2>
+<p>The worked example builds a chatbot over a CMS knowledge base, but the
+Supervisor / Search Worker / Answer Builder pattern generalizes to any
+scenario where an agent needs to ground its answers in a document
+collection rather than its own training data:</p>
+<ol>
+<li>
+<p><strong>Internal IT/HR helpdesk</strong> — retrieve from policy documents, benefits
+    guides, and IT runbooks instead of CMS articles.</p>
+</li>
+<li>
+<p><strong>Developer / product documentation assistant</strong> — index API references,
+    release notes, and how-to guides as Search Blueprints so engineers get
+    grounded, citable answers.</p>
+</li>
+<li>
+<p><strong>Legal/compliance assistant</strong> — retrieve from current policy versions
+    only, using a Search Blueprint scoped to exclude superseded documents.</p>
+</li>
+<li>
+<p><strong>Public customer self-service knowledge base</strong> — the same pattern
+    exposed on a public-facing site, answering product or support
+    questions from published KB articles.</p>
+</li>
+<li>
+<p><strong>Sales enablement assistant</strong> — retrieve from battlecards, pricing
+    sheets, and case studies to help reps answer prospect questions
+    on the spot.</p>
+</li>
+<li>
+<p><strong>Multi-site / multi-brand knowledge aggregation</strong> — separate Search
+    Workers per site or brand, combined by one Supervisor so a single
+    agent can answer across properties without mixing their content.</p>
+</li>
+<li>
+<p><strong>Incident / postmortem knowledge assistant</strong> — retrieve from past
+    incident reports and postmortems to help on-call engineers find
+    precedent for a current issue.</p>
+</li>
+</ol>
+<h2 id="references">References<a aria-hidden="true" class="heading-anchor" href="#references" tabindex="-1">#</a></h2>
+<ul>
+<li>Northstar sample corpus: <a href="https://github.com/fabian-bouche-liferay/northstar-sample-cms-space/tree/master">github.com/fabian-bouche-liferay/northstar-sample-cms-space</a></li>
+<li>Liferay AI Hub integration: <a href="https://learn.liferay.com/w/ai-hub/integrating-ai-hub-with-liferay-dxp">learn.liferay.com/w/ai-hub/integrating-ai-hub-with-liferay-dxp</a></li>
+<li>LangChain4j agentic/Supervisor documentation: <a href="https://github.com/langchain4j/langchain4j/blob/main/docs/docs/tutorials/agents.md">github.com/langchain4j/langchain4j</a></li>
+</ul>
+    </main>
+  </div>
+</div>
+<button class="back-to-top" type="button" aria-label="Back to top">&#8593;</button>
+<script>
+
+(function () {
+  // Copy-to-clipboard for every prompt frame.
+  document.addEventListener("click", function (event) {
+    var btn = event.target.closest(".copy-btn");
+    if (!btn) return;
+    var frame = btn.closest(".copy-frame");
+    var target = frame.querySelector("pre, blockquote");
+    var text = target ? target.innerText : "";
+
+    function feedback() {
+      btn.classList.add("copied");
+      setTimeout(function () {
+        btn.classList.remove("copied");
+      }, 1500);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(feedback).catch(function () {
+        fallbackCopy(text, feedback);
+      });
+    } else {
+      fallbackCopy(text, feedback);
+    }
+  });
+
+  function fallbackCopy(text, done) {
+    var textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    try { document.execCommand("copy"); } catch (err) { /* no-op */ }
+    document.body.removeChild(textarea);
+    done();
+  }
+
+  // Mobile sidebar toggle.
+  var menuToggle = document.querySelector(".menu-toggle");
+  if (menuToggle) {
+    menuToggle.addEventListener("click", function () {
+      document.body.classList.toggle("sidebar-open");
+    });
+  }
+  document.querySelectorAll(".toc a").forEach(function (link) {
+    link.addEventListener("click", function () {
+      document.body.classList.remove("sidebar-open");
+    });
+  });
+
+  // Table-of-contents filter (recursively keeps a branch visible if any
+  // descendant entry matches).
+  var filterInput = document.querySelector(".toc-filter");
+  if (filterInput) {
+    filterInput.addEventListener("input", function () {
+      var query = filterInput.value.trim().toLowerCase();
+      document.querySelectorAll(".toc > ul > li").forEach(function (li) {
+        filterItem(li, query);
+      });
+    });
+  }
+
+  function filterItem(li, query) {
+    var link = li.querySelector(":scope > a");
+    var text = link ? link.textContent.toLowerCase() : "";
+    var childList = li.querySelector(":scope > ul");
+    var childMatch = false;
+    if (childList) {
+      childList.querySelectorAll(":scope > li").forEach(function (childLi) {
+        if (filterItem(childLi, query)) childMatch = true;
+      });
+    }
+    var selfMatch = !query || text.indexOf(query) !== -1;
+    var show = selfMatch || childMatch;
+    li.style.display = show ? "" : "none";
+    return show;
+  }
+
+  // Scroll-spy: highlight the current section in the sidebar.
+  var headings = document.querySelectorAll(".doc-content h2[id], .doc-content h3[id], .doc-content h4[id]");
+  var linkMap = {};
+  document.querySelectorAll(".toc a").forEach(function (a) {
+    linkMap[a.getAttribute("href").slice(1)] = a;
+  });
+
+  if ("IntersectionObserver" in window && headings.length) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = linkMap[entry.target.id];
+        if (!link || !entry.isIntersecting) return;
+        document.querySelectorAll(".toc a.active").forEach(function (a) { a.classList.remove("active"); });
+        link.classList.add("active");
+      });
+    }, { rootMargin: "0px 0px -72% 0px", threshold: 0 });
+    headings.forEach(function (h) { observer.observe(h); });
+  }
+
+  // Back-to-top button.
+  var backToTop = document.querySelector(".back-to-top");
+  if (backToTop) {
+    window.addEventListener("scroll", function () {
+      backToTop.classList.toggle("visible", window.scrollY > 600);
+    }, { passive: true });
+    backToTop.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+})();
+
+</script>
+</body>
+</html>
