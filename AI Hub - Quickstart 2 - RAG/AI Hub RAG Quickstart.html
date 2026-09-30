@@ -238,6 +238,15 @@ agents</strong> for retrieval through Liferay Search Blueprints and <strong>1 An
 Builder agent</strong> for the final response. Orchestration is handled by the
 native Supervisor from the LangChain4j-based agentic framework
 underlying AI Hub.</p>
+<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
+<p>💡 <strong>Knowledge on an external website instead?</strong> When the knowledge is
+already published on a public website — Liferay or not — <em>AI Hub Quick
+Start 4 — External RAG</em> shows how to index it with an AI Hub <strong>Data
+Source</strong>, without Search Blueprints and without AI Hub calling DXP. That
+approach only works on public resources, whereas the DXP RAG described
+here takes the user's permissions into account. The two can also be
+combined in the same chatbot, coordinated by the Supervisor.</p>
+</blockquote></div>
 <h2 id="1-the-problem">1. The problem<a aria-hidden="true" class="heading-anchor" href="#1-the-problem" tabindex="-1">#</a></h2>
 <p>To make the RAG scenario concrete, this quick start uses a fictional
 company called <strong>Northstar Mobility Group (NMG)</strong>.</p>
@@ -1002,10 +1011,23 @@ collection rather than its own training data:</p>
     incident reports and postmortems to help on-call engineers find
     precedent for a current issue.</p>
 </li>
+<li>
+<p><strong>Hybrid public/internal knowledge</strong> — add an agent grounded in an
+    external website Data Source (Quick Start 4) next to the DXP Search
+    Workers, so one Supervisor can answer from both public website
+    content and permission-aware Liferay content.</p>
+</li>
 </ol>
 <h2 id="references">References<a aria-hidden="true" class="heading-anchor" href="#references" tabindex="-1">#</a></h2>
 <ul>
-<li>Northstar sample corpus: <a href="https://github.com/fabian-bouche-liferay/northstar-sample-cms-space/tree/master">github.com/fabian-bouche-liferay/northstar-sample-cms-space</a></li>
+<li>
+<p>Related quick start in this series: <em>AI Hub Quick Start 4 — External
+    RAG</em>, building a RAG chatbot over an external website with an AI Hub
+    Data Source</p>
+</li>
+<li>
+<p>Northstar sample corpus: <a href="https://github.com/fabian-bouche-liferay/northstar-sample-cms-space/tree/master">github.com/fabian-bouche-liferay/northstar-sample-cms-space</a></p>
+</li>
 <li>Liferay AI Hub integration: <a href="https://learn.liferay.com/w/ai-hub/integrating-ai-hub-with-liferay-dxp">learn.liferay.com/w/ai-hub/integrating-ai-hub-with-liferay-dxp</a></li>
 <li>LangChain4j agentic/Supervisor documentation: <a href="https://github.com/langchain4j/langchain4j/blob/main/docs/docs/tutorials/agents.md">github.com/langchain4j/langchain4j</a></li>
 </ul>

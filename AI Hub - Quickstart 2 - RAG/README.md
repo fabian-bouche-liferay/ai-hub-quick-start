@@ -7,6 +7,14 @@ Builder agent** for the final response. Orchestration is handled by the
 native Supervisor from the LangChain4j-based agentic framework
 underlying AI Hub.
 
+> 💡 **Knowledge on an external website instead?** When the knowledge is
+> already published on a public website — Liferay or not — *AI Hub Quick
+> Start 4 — External RAG* shows how to index it with an AI Hub **Data
+> Source**, without Search Blueprints and without AI Hub calling DXP. That
+> approach only works on public resources, whereas the DXP RAG described
+> here takes the user's permissions into account. The two can also be
+> combined in the same chatbot, coordinated by the Supervisor.
+
 ## 1. The problem
 
 To make the RAG scenario concrete, this quick start uses a fictional
@@ -934,9 +942,16 @@ collection rather than its own training data:
 7.  **Incident / postmortem knowledge assistant** — retrieve from past
     incident reports and postmortems to help on-call engineers find
     precedent for a current issue.
+8.  **Hybrid public/internal knowledge** — add an agent grounded in an
+    external website Data Source (Quick Start 4) next to the DXP Search
+    Workers, so one Supervisor can answer from both public website
+    content and permission-aware Liferay content.
 
 ## References
 
+-   Related quick start in this series: *AI Hub Quick Start 4 — External
+    RAG*, building a RAG chatbot over an external website with an AI Hub
+    Data Source
 -   Northstar sample corpus: [github.com/fabian-bouche-liferay/northstar-sample-cms-space](https://github.com/fabian-bouche-liferay/northstar-sample-cms-space/tree/master)
 -   Liferay AI Hub integration: [learn.liferay.com/w/ai-hub/integrating-ai-hub-with-liferay-dxp](https://learn.liferay.com/w/ai-hub/integrating-ai-hub-with-liferay-dxp)
 -   LangChain4j agentic/Supervisor documentation: [github.com/langchain4j/langchain4j](https://github.com/langchain4j/langchain4j/blob/main/docs/docs/tutorials/agents.md)

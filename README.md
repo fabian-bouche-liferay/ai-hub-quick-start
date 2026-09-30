@@ -20,6 +20,12 @@ share.
    — triggering an AI Hub agent synchronously from a DXP Kaleo workflow,
    exchanging data through `workflowContext`, and the security/identity
    implications of doing so.
+4. **[AI Hub - Quickstart 4 - External RAG](AI%20Hub%20-%20Quickstart%204%20-%20External%20RAG/README.md)**
+   *(⚠️ still being validated)* — building a RAG chatbot over an external, non-Liferay website: an AI
+   Hub Data Source, a single grounded agent with cited answers, and tests
+   for archived content, multi-page calculations, false premises and
+   missing information. No Liferay DXP required: both the knowledge source
+   and the chatbot can live on third-party websites.
 
 Each folder's `README.md` ends with a "Recommendations" section and an
 "Other business use cases for this pattern" section listing further ideas
@@ -38,9 +44,13 @@ ai-hub-quick-start/
 │   ├── README.md
 │   ├── AI Hub RAG Quickstart.html    # generated, do not edit by hand
 │   └── images/
-└── AI Hub - Quickstart 3 - Kaleo Workflow/
+├── AI Hub - Quickstart 3 - Kaleo Workflow/
+│   ├── README.md
+│   ├── AI Hub Kaleo Workflow Quickstart.html  # generated, do not edit by hand
+│   └── images/
+└── AI Hub - Quickstart 4 - External RAG/
     ├── README.md
-    ├── AI Hub Kaleo Workflow Quickstart.html  # generated, do not edit by hand
+    ├── AI Hub External RAG Quickstart.html  # generated, do not edit by hand
     └── images/
 ```
 
@@ -50,7 +60,7 @@ the Markdown, never hand-edit it.
 
 ## `build_quickstart_html.py`
 
-A single script, shared by all three quick starts, that converts a quick
+A single script, shared by all the quick starts, that converts a quick
 start's `README.md` into a standalone HTML page styled after
 [learn.liferay.com](https://learn.liferay.com)'s own visual language
 (same color tokens, fonts, and admonition style as a real Liferay Learn
@@ -89,6 +99,9 @@ python ../build_quickstart_html.py --output "HTTP Requests in AI Hub.html"
 
 cd "AI Hub - Quickstart 3 - Kaleo Workflow"
 python ../build_quickstart_html.py --output "AI Hub Kaleo Workflow Quickstart.html"
+
+cd "AI Hub - Quickstart 4 - External RAG"
+python ../build_quickstart_html.py --output "AI Hub External RAG Quickstart.html"
 ```
 
 | Flag | Default | Meaning |
