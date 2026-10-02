@@ -667,7 +667,10 @@ Liferay's permissions decide what each customer may read.
     browser bounds what can happen — known fields only, valid options only,
     nothing submitted without the customer — but a free-text field can still
     receive whatever the customer convinces the agent to write. Treat the
-    submitted entry like any other user input.
+    submitted entry like any other user input. AI Hub also provides a
+    **guardrails** feature to filter what goes into and comes out of an
+    agent. It is not used in this example and will be covered in a
+    dedicated guide.
 -   **Third-party script.** The module served from GitHub Pages runs in your
     pages with the user's session. That is acceptable for a quick start. In
     production, host the file yourself, or deploy it as a regular client
