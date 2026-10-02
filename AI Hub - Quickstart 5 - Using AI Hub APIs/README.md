@@ -54,7 +54,7 @@ The customer can still edit any field, go back to the assistant, or submit.
 The **"Fill in the form myself"** button skips the assistant at any time.
 
 The video below shows a complete declaration, from the first message to the
-submitted form (4 min 30):
+submitted form (2 min):
 
 <video src="videos/claim-assistant.mp4" controls preload="metadata" width="100%">
   <a href="videos/claim-assistant.mp4">Watch the claim assistant demo (videos/claim-assistant.mp4)</a>
