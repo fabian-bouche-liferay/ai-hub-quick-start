@@ -27,7 +27,7 @@ share.
    missing information. No Liferay DXP required: both the knowledge source
    and the chatbot can live on third-party websites.
 5. **[AI Hub - Quickstart 5 - Using AI Hub APIs](AI%20Hub%20-%20Quickstart%205%20-%20Using%20AI%20Hub%20APIs/README.md)**
-   *(⚠️ still being validated)* — calling an AI Hub chatbot from JavaScript
+   — calling an AI Hub chatbot from JavaScript
    in the browser: a conversational assistant that reads a Form Container,
    fills a claim declaration form from the conversation, and hands it back
    to the user to review and submit. The module is published on GitHub

@@ -1,9 +1,5 @@
 # Quick Start: Calling an AI Hub Chatbot from JavaScript — a Conversational Claim Form
 
-> ⚠️ **This quick start is still being validated.** The steps, screenshots
-> and observed behaviors may still change. Report any discrepancy you
-> notice when following it.
-
 This quick start calls a **Liferay AI Hub** chatbot from **JavaScript running
 in the browser**, on a Liferay DXP page. The use case is a claim declaration
 form: instead of facing fifteen fields, the customer explains in their own
