@@ -1095,14 +1095,6 @@ Liferay's permissions decide what each customer may read.</p>
     direct edits, and the agent never asks twice for the same value.</p>
 </li>
 <li>
-<p>Pass the current date and time explicitly, and spell them out: the
-    model does not know what "yesterday" means otherwise, and it resolves
-    "yesterday evening" or "last Monday" far more reliably from <code>Today is
-    Friday, October 2, 2026 at 12:40 (Europe/Paris, UTC+02:00).</code> than from
-    a bare <code>2026-10-02T12:40</code>. Include the day of the week and the time
-    zone, and put that sentence first in the context.</p>
-</li>
-<li>
 <p>Keep the context compact. It is sent on every turn, and its size drives
     the response time: state the formats once in the prompt, leave out what
     the agent cannot use (here, file fields), and send optional properties

@@ -685,26 +685,20 @@ Liferay's permissions decide what each customer may read.
     rejected, never forced into the field.
 4.  Send the full form state on every turn. The conversation then survives
     direct edits, and the agent never asks twice for the same value.
-5.  Pass the current date and time explicitly, and spell them out: the
-    model does not know what "yesterday" means otherwise, and it resolves
-    "yesterday evening" or "last Monday" far more reliably from `Today is
-    Friday, October 2, 2026 at 12:40 (Europe/Paris, UTC+02:00).` than from
-    a bare `2026-10-02T12:40`. Include the day of the week and the time
-    zone, and put that sentence first in the context.
-6.  Keep the context compact. It is sent on every turn, and its size drives
+5.  Keep the context compact. It is sent on every turn, and its size drives
     the response time: state the formats once in the prompt, leave out what
     the agent cannot use (here, file fields), and send optional properties
     only when they are set.
-7.  Keep the user in control: show what was filled, reveal the native form
+6.  Keep the user in control: show what was filled, reveal the native form
     before submission, and always offer a way to skip the assistant.
-8.  Check the raw reply in DevTools before changing the prompt. If the
+7.  Check the raw reply in DevTools before changing the prompt. If the
     chatbot's Supervisor rephrases the agent's JSON, make the agent
     description stricter about returning it verbatim.
-9.  Let agents fetch what Liferay already knows — the signed-in user's
+8.  Let agents fetch what Liferay already knows — the signed-in user's
     account, their policies, the applicable terms (Section 4) — rather than
     asking the customer, and check with two different users that the data
     really is theirs.
-10. Pin a versioned module URL in the client extension, and move to a
+9.  Pin a versioned module URL in the client extension, and move to a
     self-hosted file or a Workspace client extension for production.
 
 > **Let the page describe the form. Let the agent understand the customer.
