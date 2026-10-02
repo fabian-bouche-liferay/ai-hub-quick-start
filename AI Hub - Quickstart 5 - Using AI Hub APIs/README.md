@@ -127,8 +127,10 @@ The element uses the same chat API as AI Hub's own embeddable chatbot:
 
 ### The message protocol
 
-Each message carries this `context`. AI Hub merges its keys into the
-agent's input map, next to `request` (the message text):
+Each message carries this `context`. The chatbot's Supervisor only sees the
+message text, which it passes to the agent as `request`; the `context` keys
+bypass it and land directly in the agent's workflow context, where the
+nodes read them:
 
 | Key | Content |
 | --- | --- |
@@ -147,8 +149,7 @@ is sent on every turn. If the customer edits a field directly, the agent sees
 it on the next message.
 
 The schema is kept **compact on purpose**. It is sent on every turn, and its
-size drives the response time. Measured with the context embedded in the
-message text (see Step 9):
+size drives the response time. Measured on a test instance:
 
 | `formSchema` sent | Size | Time per turn |
 | --- | --- | --- |
@@ -318,7 +319,7 @@ Configure:
 ``` text
 Title: Form completion agent
 External Reference Code: AGENT_FORM_COMPLETION_FBO
-Input Variables: request,formSchema,formState,missingRequiredFields,today,currentDate,currentDateTime,currentDayOfWeek,timeZone,locale
+Input Variables: request
 Output Variable: response
 ```
 
@@ -326,24 +327,24 @@ Description (read by the chatbot's Supervisor):
 
 ```text
 Claim declaration form-filling agent. Use this agent for EVERY customer
-message.
-
-Inputs to pass on every invocation:
-- request: the customer's message, unchanged;
-- formSchema, formState, missingRequiredFields, currentDateTime, locale:
-  copy each of these context values exactly as you received them, without
-  summarizing, reformatting or omitting any of them. They are JSON strings
-  describing the form and must reach this agent intact.
-
-Its output is a JSON object consumed by a program: return it to the customer
-verbatim, with no rewording, no summary and no added text.
+message, passing the customer's message unchanged as request. Its output is a
+JSON object consumed by a program: return it to the customer verbatim, with no
+rewording, no summary and no added text.
 ```
 
-The chatbot's Supervisor receives the message `context` and forwards it to
-the agent as additional input variables. That is why the description names
-each variable to pass, and why the agent declares the same names. It is also
-why the description insists on returning the output verbatim: the JSON is
-read by the browser, not by a person, and a rephrased answer fills nothing.
+Variables are declared in **two places**, with different meanings:
+
+-   the agent definition's **Input Variables** are the arguments the
+    Supervisor fills in when it calls the agent. The Supervisor only knows
+    the customer's text, so list **`request` only**. Any other name listed
+    here gets an empty string from the Supervisor, and that empty value
+    replaces the real `context` value;
+-   the LLM node's **Input Variables** (Step 7) list every value the prompt
+    uses. They are read from the workflow context, where the `context` keys
+    already are.
+
+The description insists on returning the output verbatim: the JSON is read
+by the browser, not by a person, and a rephrased answer fills nothing.
 
 > ⚠️ **Click Save as Draft before clicking Edit Workflow.** Opening the
 > workflow editor leaves the agent form: anything you entered on it that
@@ -358,6 +359,9 @@ Click **Edit Workflow** and create a simple `Start → LLM → End` workflow.
 Select the **LLM** node and configure the following fields.
 
 #### Input Variables
+
+Every value the prompt uses, read from the workflow context: `request` from
+the Supervisor, everything else from the message `context`.
 
 ```json
 [
@@ -518,12 +522,9 @@ Editor:
 | Chatbot External Reference Code | `CHATBOT_FORM_COMPLETION_FBO` |
 | AI Hub URL | `https://ai.hub.liferay.com` (your AI Hub origin) |
 | Welcome Message | The first assistant message, shown without calling the agent |
-| Embed Form Context in Message Text | **Checked** — see below |
+| Embed Form Context in Message Text | Unchecked (default): the context reaches the agent on its own (Step 6) |
 
 ![The Page Editor with the Claim Chat Form Wrapper selected: the Form Container in its drop zone and the AI Hub configuration panel on the right](images/page-creation.png)
-
-> ⚠️ **Check "Embed Form Context in Message Text".** The agent needs it to
-> receive the form context.
 
 Publish the page.
 
@@ -684,20 +685,24 @@ Liferay's permissions decide what each customer may read.
     rejected, never forced into the field.
 4.  Send the full form state on every turn. The conversation then survives
     direct edits, and the agent never asks twice for the same value.
-5.  Keep the context compact. It is sent on every turn, and its size drives
+5.  In the agent definition, declare as Input Variables only what the
+    Supervisor can supply — here `request`. Declare the `context` keys on
+    the workflow's nodes: a key also listed in the agent definition is
+    replaced with an empty value.
+6.  Keep the context compact. It is sent on every turn, and its size drives
     the response time: state the formats once in the prompt, leave out what
     the agent cannot use (here, file fields), and send optional properties
     only when they are set.
-6.  Keep the user in control: show what was filled, reveal the native form
+7.  Keep the user in control: show what was filled, reveal the native form
     before submission, and always offer a way to skip the assistant.
-7.  Check the raw reply in DevTools before changing the prompt. If the
+8.  Check the raw reply in DevTools before changing the prompt. If the
     chatbot's Supervisor rephrases the agent's JSON, make the agent
     description stricter about returning it verbatim.
-8.  Let agents fetch what Liferay already knows — the signed-in user's
+9.  Let agents fetch what Liferay already knows — the signed-in user's
     account, their policies, the applicable terms (Section 4) — rather than
     asking the customer, and check with two different users that the data
     really is theirs.
-9.  Pin a versioned module URL in the client extension, and move to a
+10. Pin a versioned module URL in the client extension, and move to a
     self-hosted file or a Workspace client extension for production.
 
 > **Let the page describe the form. Let the agent understand the customer.

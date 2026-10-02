@@ -411,8 +411,10 @@ renders on every form field fragment:</p>
 </li>
 </ol>
 <h3 id="the-message-protocol">The message protocol<a aria-hidden="true" class="heading-anchor" href="#the-message-protocol" tabindex="-1">#</a></h3>
-<p>Each message carries this <code>context</code>. AI Hub merges its keys into the
-agent's input map, next to <code>request</code> (the message text):</p>
+<p>Each message carries this <code>context</code>. The chatbot's Supervisor only sees the
+message text, which it passes to the agent as <code>request</code>; the <code>context</code> keys
+bypass it and land directly in the agent's workflow context, where the
+nodes read them:</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -463,8 +465,7 @@ agent's input map, next to <code>request</code> (the message text):</p>
 is sent on every turn. If the customer edits a field directly, the agent sees
 it on the next message.</p>
 <p>The schema is kept <strong>compact on purpose</strong>. It is sent on every turn, and its
-size drives the response time. Measured with the context embedded in the
-message text (see Step 9):</p>
+size drives the response time. Measured on a test instance:</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -675,28 +676,32 @@ Form Wrapper</strong> fragment.</p>
 <p>Configure:</p>
 <div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Title: Form completion agent
 External Reference Code: AGENT_FORM_COMPLETION_FBO
-Input Variables: request,formSchema,formState,missingRequiredFields,today,currentDate,currentDateTime,currentDayOfWeek,timeZone,locale
+Input Variables: request
 Output Variable: response
 </code></pre></div>
 <p>Description (read by the chatbot's Supervisor):</p>
 <div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-text">Claim declaration form-filling agent. Use this agent for EVERY customer
-message.
-
-Inputs to pass on every invocation:
-- request: the customer's message, unchanged;
-- formSchema, formState, missingRequiredFields, currentDateTime, locale:
-  copy each of these context values exactly as you received them, without
-  summarizing, reformatting or omitting any of them. They are JSON strings
-  describing the form and must reach this agent intact.
-
-Its output is a JSON object consumed by a program: return it to the customer
-verbatim, with no rewording, no summary and no added text.
+message, passing the customer's message unchanged as request. Its output is a
+JSON object consumed by a program: return it to the customer verbatim, with no
+rewording, no summary and no added text.
 </code></pre></div>
-<p>The chatbot's Supervisor receives the message <code>context</code> and forwards it to
-the agent as additional input variables. That is why the description names
-each variable to pass, and why the agent declares the same names. It is also
-why the description insists on returning the output verbatim: the JSON is
-read by the browser, not by a person, and a rephrased answer fills nothing.</p>
+<p>Variables are declared in <strong>two places</strong>, with different meanings:</p>
+<ul>
+<li>
+<p>the agent definition's <strong>Input Variables</strong> are the arguments the
+    Supervisor fills in when it calls the agent. The Supervisor only knows
+    the customer's text, so list <strong><code>request</code> only</strong>. Any other name listed
+    here gets an empty string from the Supervisor, and that empty value
+    replaces the real <code>context</code> value;</p>
+</li>
+<li>
+<p>the LLM node's <strong>Input Variables</strong> (Step 7) list every value the prompt
+    uses. They are read from the workflow context, where the <code>context</code> keys
+    already are.</p>
+</li>
+</ul>
+<p>The description insists on returning the output verbatim: the JSON is read
+by the browser, not by a person, and a rephrased answer fills nothing.</p>
 <div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
 <p class="adm-block adm-warning">⚠️ <strong>Click Save as Draft before clicking Edit Workflow.</strong> Opening the
 workflow editor leaves the agent form: anything you entered on it that
@@ -707,6 +712,8 @@ hasn't been saved is lost.</p>
 <p><img alt="The Form completion agent workflow: Start, LLM and End nodes, with the LLM node's prompt and variables" src="images/agent-workflow.png"/></p>
 <p>Select the <strong>LLM</strong> node and configure the following fields.</p>
 <h4 id="input-variables">Input Variables<a aria-hidden="true" class="heading-anchor" href="#input-variables" tabindex="-1">#</a></h4>
+<p>Every value the prompt uses, read from the workflow context: <code>request</code> from
+the Supervisor, everything else from the message <code>context</code>.</p>
 <div class="copy-frame copy-frame-code"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><pre><code class="language-json">[
   {"name": "request", "type": "string"},
   {"name": "formSchema", "type": "string"},
@@ -869,15 +876,11 @@ Editor:</p>
 </tr>
 <tr>
 <td>Embed Form Context in Message Text</td>
-<td><strong>Checked</strong> — see below</td>
+<td>Unchecked (default): the context reaches the agent on its own (Step 6)</td>
 </tr>
 </tbody>
 </table></div>
 <p><img alt="The Page Editor with the Claim Chat Form Wrapper selected: the Form Container in its drop zone and the AI Hub configuration panel on the right" src="images/page-creation.png"/></p>
-<div class="copy-frame copy-frame-quote"><button aria-label="Copy to clipboard" class="copy-btn" type="button"><svg class="icon-copy" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="13" rx="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><svg class="icon-check" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polyline points="20 6 9 17 4 12"></polyline></svg></button><blockquote>
-<p class="adm-block adm-warning">⚠️ <strong>Check "Embed Form Context in Message Text".</strong> The agent needs it to
-receive the form context.</p>
-</blockquote></div>
 <p>Publish the page.</p>
 <h3 id="step-10-test-it">Step 10 --- Test it<a aria-hidden="true" class="heading-anchor" href="#step-10-test-it" tabindex="-1">#</a></h3>
 <p>Open the published page and describe a claim in one sentence, for example:</p>
@@ -1091,6 +1094,12 @@ Liferay's permissions decide what each customer may read.</p>
 <li>
 <p>Send the full form state on every turn. The conversation then survives
     direct edits, and the agent never asks twice for the same value.</p>
+</li>
+<li>
+<p>In the agent definition, declare as Input Variables only what the
+    Supervisor can supply — here <code>request</code>. Declare the <code>context</code> keys on
+    the workflow's nodes: a key also listed in the agent definition is
+    replaced with an empty value.</p>
 </li>
 <li>
 <p>Keep the context compact. It is sent on every turn, and its size drives
