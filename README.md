@@ -26,6 +26,13 @@ share.
    for archived content, multi-page calculations, false premises and
    missing information. No Liferay DXP required: both the knowledge source
    and the chatbot can live on third-party websites.
+5. **[AI Hub - Quickstart 5 - Using AI Hub APIs](AI%20Hub%20-%20Quickstart%205%20-%20Using%20AI%20Hub%20APIs/README.md)**
+   *(⚠️ still being validated)* — calling an AI Hub chatbot from JavaScript
+   in the browser: a conversational assistant that reads a Form Container,
+   fills a claim declaration form from the conversation, and hands it back
+   to the user to review and submit. The module is published on GitHub
+   Pages and registered as a JS Import Maps Entry client extension from the
+   UI, with nothing to build or deploy.
 
 Each folder's `README.md` ends with a "Recommendations" section and an
 "Other business use cases for this pattern" section listing further ideas
@@ -48,10 +55,15 @@ ai-hub-quick-start/
 │   ├── README.md
 │   ├── AI Hub Kaleo Workflow Quickstart.html  # generated, do not edit by hand
 │   └── images/
-└── AI Hub - Quickstart 4 - External RAG/
+├── AI Hub - Quickstart 4 - External RAG/
+│   ├── README.md
+│   ├── AI Hub External RAG Quickstart.html  # generated, do not edit by hand
+│   └── images/
+└── AI Hub - Quickstart 5 - Using AI Hub APIs/
     ├── README.md
-    ├── AI Hub External RAG Quickstart.html  # generated, do not edit by hand
-    └── images/
+    ├── AI Hub APIs Quickstart.html   # generated, do not edit by hand
+    ├── images/
+    └── resources/                    # picklists, Object folder, fragment zip
 ```
 
 The source of truth for every quick start is its `README.md`. The `.html`
@@ -102,6 +114,9 @@ python ../build_quickstart_html.py --output "AI Hub Kaleo Workflow Quickstart.ht
 
 cd "AI Hub - Quickstart 4 - External RAG"
 python ../build_quickstart_html.py --output "AI Hub External RAG Quickstart.html"
+
+cd "AI Hub - Quickstart 5 - Using AI Hub APIs"
+python ../build_quickstart_html.py --output "AI Hub APIs Quickstart.html"
 ```
 
 | Flag | Default | Meaning |

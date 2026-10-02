@@ -473,7 +473,7 @@ h2:hover .heading-anchor, h3:hover .heading-anchor, h4:hover .heading-anchor { o
   padding: .125rem .4rem; border-radius: 4px; font-size: .88em;
 }
 em { color: inherit; }
-.doc-content img {
+.doc-content img, .doc-content video {
   max-width: 100%; height: auto; display: block; margin: 1.1rem 0;
   border: 1px solid var(--lf-neutral-2); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08);
 }
